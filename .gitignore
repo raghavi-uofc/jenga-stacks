@@ -36,3 +36,7 @@ coverage/
 .vercel/
 firebase-debug.log
 .eslintcache
+jenga-frontend/node_modules/
+jenga-frontend/dist/
+jenga-frontend/.env
+jenga-frontend/.env.*
