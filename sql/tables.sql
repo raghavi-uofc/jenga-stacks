@@ -1,6 +1,6 @@
 USE jengadb;
 
-CREATE TABLE User (
+CREATE TABLE Users (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
