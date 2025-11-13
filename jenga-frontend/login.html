@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jenga Stacks — Sign In</title>
+    <!-- Tailwind via CDN for this standalone page -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // minimal Tailwind config to keep palette neutral
+      tailwind.config = {
+        theme: { extend: { colors: { apple: { black: '#000000' } } } },
+        darkMode: 'class',
+      }
+    </script>
+  </head>
+  <body class="antialiased text-gray-900 bg-white">
+    <main class="min-h-screen flex items-center justify-center px-6 py-12">
+      <div class="w-full max-w-sm">
+        <!-- Apple logo -->
+        <div class="flex justify-center mb-6">
+          <svg viewBox="0 0 256 315" aria-hidden="true" class="h-8 w-8 fill-black">
+            <path d="M213.803 167.584c.388 41.89 36.812 55.85 37.232 56.02-.308.99-5.828 19.95-19.205 39.54-11.557 16.88-23.548 33.69-42.49 34.02-18.58.35-24.55-10.99-45.78-10.99-21.22 0-27.85 10.64-45.39 11.34-18.27.7-32.19-18.25-43.82-35.07-23.84-34.6-42.05-97.66-17.6-140.27 12.16-21.09 33.88-34.42 57.53-34.77 17.96-.35 34.89 12.33 45.79 12.33 10.86 0 31.54-15.25 53.17-13.03 9.06.38 34.54 3.68 50.86 27.67-1.32.82-30.4 17.77-30.36 53.2Zm-35.05-103.8c9.61-11.64 16.09-27.79 14.31-43.78-13.85.56-30.72 9.22-40.69 20.86-8.93 10.31-16.7 26.78-14.62 42.6 15.47 1.2 31.39-7.86 41-19.68Z"/>
+          </svg>
+        </div>
+
+        <!-- Heading -->
+        <h1 class="text-2xl font-semibold text-center tracking-tight mb-2">Sign in to Jenga Stacks</h1>
+        <p class="text-center text-sm text-gray-600 mb-8">Use your Apple ID to access Apple services.</p>
+
+        <!-- Form -->
+        <form class="space-y-4">
+          <div>
+            <label for="appleId" class="sr-only">Apple ID</label>
+            <input
+              id="appleId"
+              type="email"
+              placeholder="Apple ID"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 text-[15px] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+              autocomplete="username"
+              required
+            />
+          </div>
+          <div>
+            <label for="password" class="sr-only">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Password"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 text-[15px] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <div class="flex items-center justify-between text-sm">
+            <label class="inline-flex items-center gap-2 select-none">
+              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" />
+              <span>Keep me signed in</span>
+            </label>
+            <a href="#" class="text-blue-600 hover:underline">Forgot Apple ID or password?</a>
+          </div>
+
+          <button
+            type="submit"
+            class="group mt-2 w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-black px-4 py-3 text-white text-[15px] font-medium shadow-sm hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            Sign In
+            <svg class="h-4 w-4 transition-transform group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 11-1.414-1.414L13.586 11H3a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm">
+          <a href="#" class="text-blue-600 hover:underline">Create new Apple ID</a>
+        </div>
+
+        <p class="mt-8 text-[13px] text-center text-gray-500 leading-relaxed">
+          By signing in, you agree to Apple’s Terms & Conditions and Privacy Policy.
+        </p>
+      </div>
+    </main>
+  </body>
+  </html>
