@@ -1,0 +1,6 @@
+Flask
+flask-mysqldb
+flask-bcrypt
+flask-httpauth
+flasgger
+itsdangerous
