@@ -45,7 +45,7 @@ def register():
     pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     cur = mysql.connection.cursor()
     cur.execute(
-        "INSERT INTO User (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)",
+        "INSERT INTO Users (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)",
         (first_name, last_name, email, pw_hash)
     )
     mysql.connection.commit()
@@ -121,7 +121,7 @@ def reset_password():
 
     pw_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
     cur = mysql.connection.cursor()
-    cur.execute("UPDATE User SET password=%s WHERE id=%s", (pw_hash, user['id']))
+    cur.execute("UPDATE Users SET password=%s WHERE id=%s", (pw_hash, user['id']))
     mysql.connection.commit()
     cur.close()
     return jsonify({'message': 'Password updated successfully'})
@@ -160,7 +160,7 @@ def update_profile():
             return jsonify({'error': 'Email already used'}), 400
 
     cur = mysql.connection.cursor()
-    query = "UPDATE User SET "
+    query = "UPDATE Users SET "
     params = []
     updates = []
     if first_name:

@@ -17,11 +17,11 @@ swagger = Swagger()
 import auth_utils
 def create_app():
     app = Flask(__name__)
-    app.config['MYSQL_HOST'] = ''#Fill in IPv4 value
-    app.config['MYSQL_USER'] =  'root'
-    app.config['MYSQL_PASSWORD'] =  ''#Your local MySQL DB password 
+    app.config['MYSQL_HOST'] = '127.0.0.1'      # or 'localhost'
+    app.config['MYSQL_USER'] = 'jengaapp'
+    app.config['MYSQL_PASSWORD'] = 'jengapassword'
     app.config['MYSQL_DB'] = 'jengadb'
-    app.config['SECRET_KEY'] =  'your secret key'
+    app.config['SECRET_KEY'] = 'change_this_secret_later'
     app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
     mysql.init_app(app)

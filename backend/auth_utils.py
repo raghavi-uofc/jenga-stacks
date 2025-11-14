@@ -21,7 +21,7 @@ def generate_token(user):
 def get_user_by_email(email):
     from app import mysql
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM User WHERE email=%s", (email,))
+    cur.execute("SELECT * FROM Users WHERE email=%s", (email,))
     user = cur.fetchone()
     cur.close()
     return user
@@ -29,7 +29,7 @@ def get_user_by_email(email):
 def get_user_by_id(user_id):
     from app import mysql
     cur = mysql.connection.cursor()
-    cur.execute("SELECT id, first_name, last_name, email, role, status, password FROM User WHERE id=%s", (user_id,))
+    cur.execute("SELECT id, first_name, last_name, email, role, status, password FROM Users WHERE id=%s", (user_id,))
     user = cur.fetchone()
     cur.close()
     return user

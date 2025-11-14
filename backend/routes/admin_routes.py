@@ -19,7 +19,7 @@ def admin_list_users():
     if g.current_user['role'] != 'admin':
         return jsonify({'error': 'Unauthorized'}), 401
     cur = mysql.connection.cursor()
-    cur.execute("SELECT id, first_name, last_name, email, role, status, dateTimeCreated FROM User ORDER BY dateTimeCreated DESC")
+    cur.execute("SELECT id, first_name, last_name, email, role, status, dateTimeCreated FROM Users ORDER BY dateTimeCreated DESC")
     users = cur.fetchall()
     cur.close()
     return jsonify({'users': users})
@@ -37,10 +37,10 @@ def admin_delete_user(user_id):
     if g.current_user['role'] != 'admin':
         return jsonify({'error': 'Unauthorized'}), 401
     cur = mysql.connection.cursor()
-    cur.execute("SELECT id FROM User WHERE id=%s", (user_id,))
+    cur.execute("SELECT id FROM Users WHERE id=%s", (user_id,))
     if not cur.fetchone():
         return jsonify({'error': 'User not found'}), 404
-    cur.execute("DELETE FROM User WHERE id=%s", (user_id,))
+    cur.execute("DELETE FROM Users WHERE id=%s", (user_id,))
     mysql.connection.commit()
     cur.close()
     return jsonify({'message': 'User deleted'})
