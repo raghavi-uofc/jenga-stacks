@@ -4,3 +4,6 @@ flask-bcrypt
 flask-httpauth
 flasgger
 itsdangerous
+flask-cors
+flask-restx
+google-genai

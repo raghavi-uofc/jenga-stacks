@@ -55,3 +55,32 @@ def add_member():
     new_id = cur.lastrowid
     cur.close()
     return jsonify({'message': 'Member added', 'member_id': new_id}), 201
+
+@member_bp.route('/members/user/<int:user_id>', methods=['GET'])
+def get_members_by_user(user_id):
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    # Check user exists
+    cur.execute("SELECT id FROM User WHERE id=%s", (user_id,))
+    if not cur.fetchone():
+        return jsonify({'error': 'User not found'}), 404
+
+    # Fetch members (fixing DISTINCT + ORDER BY issue)
+    cur.execute("""
+        SELECT DISTINCT m.id AS memberId, m.firstName, m.lastName, m.dateTimeUpdated
+        FROM Member m
+        JOIN TeamMember tm ON tm.MemberId = m.id
+        JOIN Team t ON t.id = tm.TeamId
+        JOIN Project p ON p.id = t.projectId
+        WHERE p.userId = %s
+        ORDER BY m.dateTimeUpdated DESC
+    """, (user_id,))
+
+    members = cur.fetchall()
+    cur.close()
+
+    # Optionally remove dateTimeUpdated before returning
+    for m in members:
+        m.pop('dateTimeUpdated', None)
+
+    return jsonify({'user_id': user_id, 'members': members}), 200
