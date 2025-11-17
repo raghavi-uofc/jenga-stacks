@@ -12,4 +12,4 @@ SELECT t.name AS teamName,
 FROM jengadb.TeamMember tm
 LEFT JOIN jengadb.Team t on tm.fkTeamId = t.id
 LEFT JOIN jengadb.Member m on tm.fkMemberId = m.id
-WHERE t.name = 'Agile Aces';
+WHERE t.name = 'Blue Sky Thinking';
