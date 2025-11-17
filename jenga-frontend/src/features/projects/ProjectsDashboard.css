@@ -1,0 +1,10 @@
+.projects-list-area {
+    flex-grow: 1; 
+    padding: 20px;
+    overflow-y: auto; 
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    align-content: start; 
+    background-color: var(--bg-white); 
+}

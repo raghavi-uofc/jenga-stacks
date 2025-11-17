@@ -1,0 +1,96 @@
+.member-detail-container {
+  padding: 30px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.title-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-name {
+  margin: 0;
+  font-size: 2em;
+}
+
+.member-name-input {
+  font-size: 2em;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  padding: 2px 5px;
+}
+
+.edit-icon {
+  cursor: pointer;
+  color: #007bff;
+  font-size: 0.8em;
+}
+
+.close-button {
+  background: none;
+  border: 1px solid #333;
+  padding: 5px 10px;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.section-title {
+  font-size: 1.2em;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+
+.skill-table,
+.roles-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  border: 1px solid #333;
+}
+
+.skill-table th,
+.roles-table th,
+.skill-table td,
+.roles-table td {
+  border: 1px solid #333;
+  padding: 10px;
+  text-align: left;
+}
+
+.add-button {
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9em;
+  color: #333;
+  margin-left: 5px;
+  margin-bottom: 20px;
+}
+
+.project-roles-title {
+  margin-top: 40px;
+}
+
+.roles-table .action-column {
+  width: 200px;
+  text-align: right;
+}
+
+.remove-role-button {
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  font-size: 0.9em;
+  text-decoration: underline;
+}
