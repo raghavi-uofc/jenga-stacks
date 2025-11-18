@@ -1,0 +1,14 @@
+DROP TABLE IF EXISTS jengadb.User;
+
+CREATE TABLE jengadb.User(
+    id INT NOT NULL AUTO_INCREMENT,
+    firstName VARCHAR (64) NOT NULL,
+    lastName VARCHAR (64) NOT NULL,
+    password VARCHAR(128) NOT NULL,
+    email VARCHAR(128) NOT NULL,
+    status VARCHAR(32) NOT NULL,
+    role VARCHAR(32) NOT NULL,
+    dateTimeCreated datetime DEFAULT CURRENT_TIMESTAMP,
+    dateTimeModified datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+)
