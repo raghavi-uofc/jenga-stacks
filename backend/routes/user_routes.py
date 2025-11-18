@@ -1,9 +1,9 @@
 # Databricks notebook source
 # routes/user_routes.py - User related routes
 
-from flask import Blueprint, request, jsonify, g, current_app
+from flask import Blueprint, request, jsonify, g
 from app import mysql, bcrypt, auth
-from auth_utils import get_user_by_email, generate_token
+from auth_utils import get_user_by_email, generate_token, serializer
 from flasgger import swag_from
 
 user_bp = Blueprint('user', __name__)
@@ -17,9 +17,10 @@ user_bp = Blueprint('user', __name__)
             'first_name': {'type': 'string'},
             'last_name': {'type': 'string'},
             'email': {'type': 'string'},
-            'password': {'type': 'string'}
+            'password': {'type': 'string'},
+            'role' : {'type': 'string'},
         },
-        'required': ['first_name', 'last_name', 'email', 'password']
+        'required': ['first_name', 'last_name', 'email', 'password', 'role']
     }}],
     'responses': {
         201: {'description': 'User created successfully'},
@@ -35,9 +36,14 @@ def register():
     last_name = data.get('last_name')
     email = data.get('email')
     password = data.get('password')
+    role = data.get('role')
 
-    if not (first_name and last_name and email and password):
+    if not (first_name and last_name and email and password and role):
         return jsonify({'error': 'Missing required fields'}), 400
+
+    ALLOWED_ROLES = ['regular', 'admin']
+    if role not in ALLOWED_ROLES:
+        return jsonify({'error': f'Invalid role specified. Must be one of: {", ".join(ALLOWED_ROLES)}'}), 400
 
     if get_user_by_email(email):
         return jsonify({'error': 'Email already registered'}), 400
@@ -45,8 +51,8 @@ def register():
     pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     cur = mysql.connection.cursor()
     cur.execute(
-        "INSERT INTO Users (first_name, last_name, email, password) VALUES (%s, %s, %s, %s)",
-        (first_name, last_name, email, pw_hash)
+        "INSERT INTO User (first_name, last_name, email, password,role) VALUES (%s, %s, %s, %s, %s)",
+        (first_name, last_name, email, pw_hash, role)
     )
     mysql.connection.commit()
     cur.close()
@@ -90,24 +96,24 @@ def login():
     return jsonify({'token': token, 'user': {'id': user['id'], 'email': user['email'], 'first_name': user['first_name'], 'last_name': user['last_name'], 'role': user['role']}})
 
 @user_bp.route('/users/reset_password', methods=['POST'])
-@auth.login_required
-@swag_from({
-    'tags': ['User'],
-    'parameters': [{'name': 'body', 'in': 'body', 'required': True, 'schema': {
-        'type': 'object',
-        'properties': {
-            'old_password': {'type': 'string'},
-            'new_password': {'type': 'string'}
-        },
-        'required': ['old_password', 'new_password']
-    }}],
-    'responses': {
-        200: {'description': 'Password updated'},
-        400: {'description': 'Bad request'},
-        401: {'description': 'Unauthorized'}
-    }
-})
 def reset_password():
+    # Extract token from Authorization header
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header[len('Bearer '):]
+
+    try:
+        # Deserialize token to get email
+        email = serializer.loads(token)
+    except Exception as e:
+        print(f"Token decode error: {e}")
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    user = get_user_by_email(email)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
     data = request.get_json()
     old_password = data.get('old_password')
     new_password = data.get('new_password')
@@ -115,16 +121,18 @@ def reset_password():
     if not (old_password and new_password):
         return jsonify({'error': 'Missing old or new password'}), 400
 
-    user = get_user_by_email(g.current_user['email'])
     if not bcrypt.check_password_hash(user['password'], old_password):
         return jsonify({'error': 'Old password incorrect'}), 401
 
     pw_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
     cur = mysql.connection.cursor()
-    cur.execute("UPDATE Users SET password=%s WHERE id=%s", (pw_hash, user['id']))
-    mysql.connection.commit()
-    cur.close()
-    return jsonify({'message': 'Password updated successfully'})
+    try:
+        cur.execute("UPDATE User SET password=%s WHERE id=%s", (pw_hash, user['id']))
+        mysql.connection.commit()
+    finally:
+        cur.close()
+
+    return jsonify({'message': 'Password updated successfully'}), 200
 
 @user_bp.route('/users/profile', methods=['PUT'])
 @auth.login_required
@@ -160,7 +168,7 @@ def update_profile():
             return jsonify({'error': 'Email already used'}), 400
 
     cur = mysql.connection.cursor()
-    query = "UPDATE Users SET "
+    query = "UPDATE User SET "
     params = []
     updates = []
     if first_name:

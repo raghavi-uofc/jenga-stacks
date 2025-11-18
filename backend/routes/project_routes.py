@@ -1,14 +1,33 @@
 # Databricks notebook source
 # project_routes.py
-from flask import Blueprint, request, jsonify, g, current_app
+from flask import Blueprint, request, jsonify, current_app, request
 from app import mysql
 import MySQLdb.cursors
 from flasgger import swag_from
 from google import genai
 from google.genai import types
 import json
+from auth_utils import get_user_by_email, serializer
 
 project_bp = Blueprint('project', __name__)
+
+def authenticate_token():
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return None, jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header[len('Bearer '):]
+
+    try:
+        email = serializer.loads(token)
+    except Exception as e:
+        print(f"Token decode error: {e}")
+        return None, jsonify({'error': 'Unauthorized'}), 401
+
+    user = get_user_by_email(email)
+    if not user:
+        return None, jsonify({'error': 'Unauthorized'}), 401
+
+    return user, None, None
 
 
 def build_team_summary(members):
@@ -208,21 +227,18 @@ def save_project_complete(data, user_id, project_status):
 # Save as draft endpoint
 @project_bp.route('/projects/save', methods=['POST'])
 def save_project_draft():
+    user, error_response, status_code = authenticate_token()
+    if error_response:
+        return error_response, status_code
+
     data = request.get_json() or {}
 
     if not all([data.get('name'), data.get('requirement_description'), data.get('goal_description')]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
-        # TEMP for testing - replace with g.current_user['id'] after auth is setup
-        user_id = 9
-        project_id = save_project_complete(data, user_id, 'draft')
-
-        return jsonify({
-            'message': 'Project saved as draft',
-            'project_id': project_id
-        }), 200
-
+        project_id = save_project_complete(data, user['id'], 'draft')
+        return jsonify({'message': 'Project saved as draft', 'project_id': project_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -230,21 +246,39 @@ def save_project_draft():
 # Submit project endpoint with LLM call
 @project_bp.route('/projects/submit', methods=['POST'])
 def submit_project():
+    user, error_response, status_code = authenticate_token()
+    if error_response:
+        return error_response, status_code
+
     data = request.get_json() or {}
+
+    INVALID_KEYWORDS = {'dog', 'cat', 'pet', 'animal'}
+
+    def is_input_reasonable(data):
+        combined_text = ' '.join([
+            str(data.get('goal_description', '')).lower(),
+            str(data.get('requirement_description', '')).lower(),
+            str(data.get('name', '')).lower()
+        ])
+        if any(keyword in combined_text for keyword in INVALID_KEYWORDS):
+            return False
+        return True
+
+    # Validate inputs before LLM call
+    if not is_input_reasonable(data):
+        return jsonify({'error': 'Input contains invalid or unsupported project topics'}), 400
 
     if not all([data.get('name'), data.get('requirement_description'), data.get('goal_description')]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
-        user_id = 9  # TEMP hardcoded
-        project_id = save_project_complete(data, user_id, 'submitted')
+        project_id = save_project_complete(data, user['id'], 'submitted')
 
         # Build prompt for Gemini
         team_members = data.get('team_members') or data.get('teamMembers') or []
         team_summary = build_team_summary(team_members)
         prompt = build_project_prompt(data, team_summary)
 
-        # Save prompt with version
         cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
         cur.execute("SELECT MAX(version) as max_version FROM Prompts WHERE projectId=%s", (project_id,))
         row = cur.fetchone()
@@ -291,6 +325,54 @@ def submit_project():
         mysql.connection.rollback()
         return jsonify({'error': str(e)}), 500
 
+@project_bp.route('/projects/user/<int:user_id>', methods=['GET'])
+def list_projects_by_user(user_id):
+    user, error_response, status_code = authenticate_token()
+    if error_response:
+        return error_response, status_code
+
+    # Ensure user only gets their own projects or admin if needed
+    if user['id'] != user_id:
+        return jsonify({'error': 'Forbidden'}), 403
+
+    status = request.args.get('status')
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    if status in ['draft', 'submitted']:
+        cur.execute(
+            "SELECT * FROM Project WHERE userId=%s AND project_status=%s ORDER BY dateTimeUpdated DESC",
+            (user_id, status)
+        )
+    else:
+        cur.execute(
+            "SELECT * FROM Project WHERE userId=%s ORDER BY dateTimeUpdated DESC",
+            (user_id,)
+        )
+
+    projects = cur.fetchall()
+    cur.close()
+    return jsonify({'projects': projects}), 200
+
+
+
+@project_bp.route('/projects/<int:project_id>', methods=['DELETE'])
+def delete_project(project_id):
+    user, error_response, status_code = authenticate_token()
+    if error_response:
+        return error_response, status_code
+
+    cur = mysql.connection.cursor()
+
+    cur.execute("SELECT id FROM Project WHERE id=%s AND userId=%s", (project_id, user['id']))
+    if not cur.fetchone():
+        cur.close()
+        return jsonify({'error': 'Project not found'}), 404
+
+    cur.execute("DELETE FROM Project WHERE id=%s", (project_id,))
+    mysql.connection.commit()
+    cur.close()
+
+    return jsonify({'message': 'Project deleted'}), 200
 
 @project_bp.route('/projects/<int:project_id>', methods=['GET'])
 @swag_from({
@@ -302,7 +384,9 @@ def submit_project():
                   '404': {'description': 'Project not found'}}
 })
 def get_project_details(project_id):
-    user_id = 9  # TEMP hardcoded
+    user, error_response, status_code = authenticate_token()
+    if error_response:
+        return error_response, status_code
 
     sql_query = """
     SELECT
@@ -329,7 +413,7 @@ def get_project_details(project_id):
     """
 
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cur.execute(sql_query, (project_id, user_id))
+    cur.execute(sql_query, (project_id, user['id']))
     detailed_rows = cur.fetchall()
     cur.close()
 
@@ -366,40 +450,3 @@ def get_project_details(project_id):
                 seen_members.add(member_name)
 
     return jsonify({'project': project_details})
-
-
-@project_bp.route('/projects/user/<int:user_id>', methods=['GET'])
-def list_projects_by_user(user_id):
-    status = request.args.get('status')
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-
-    if status in ['draft', 'submitted']:
-        cur.execute(
-            "SELECT * FROM Project WHERE userId=%s AND project_status=%s ORDER BY dateTimeUpdated DESC",
-            (user_id, status)
-        )
-    else:
-        cur.execute(
-            "SELECT * FROM Project WHERE userId=%s ORDER BY dateTimeUpdated DESC",
-            (user_id,)
-        )
-
-    projects = cur.fetchall()
-    cur.close()
-    return jsonify({'projects': projects}), 200
-
-
-@project_bp.route('/projects/<int:project_id>', methods=['DELETE'])
-def delete_project(project_id):
-    user_id = 9  # TEMP hardcoded
-    cur = mysql.connection.cursor()
-
-    cur.execute("SELECT id FROM Project WHERE id=%s AND userId=%s", (project_id, user_id))
-    if not cur.fetchone():
-        return jsonify({'error': 'Project not found'}), 404
-
-    cur.execute("DELETE FROM Project WHERE id=%s", (project_id,))
-    mysql.connection.commit()
-    cur.close()
-
-    return jsonify({'message': 'Project deleted'}), 200
