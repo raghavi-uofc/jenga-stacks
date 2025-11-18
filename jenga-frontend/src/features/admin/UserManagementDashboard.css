@@ -1,0 +1,178 @@
+/* Container and layout */
+.app-layout {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+  width: 200vh;
+}
+
+.main-content-area {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 20px 30px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Heading */
+.user-table-container h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Table styles */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.user-table th,
+.user-table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.user-table th {
+  background-color: #f0f0f0;
+  font-weight: 600;
+  color: #555;
+}
+
+.select-col {
+  width: 40px;
+  text-align: center;
+}
+
+.actions-col {
+  width: 80px;
+  text-align: center;
+}
+
+/* Ellipsis menu */
+.ellipsis-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 0;
+  user-select: none;
+  color: #666;
+}
+
+.menu-button:hover {
+  color: #000;
+}
+
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: white;
+  border: 1px solid #ccc;
+  min-width: 120px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  border-radius: 4px;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  background: white;
+  padding: 10px 12px;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: #efefef;
+}
+
+.delete-item {
+  color: #cc0000;
+  font-weight: 600;
+}
+
+/* Bulk actions bar */
+.bulk-actions-bar {
+  background-color: #ffe6e6;
+  border: 1px solid #cc0000;
+  padding: 10px 15px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #660000;
+}
+
+.bulk-button {
+  background-color: #cc0000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.bulk-button:hover {
+  background-color: #990000;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.pagination-controls button {
+  padding: 6px 14px;
+  cursor: pointer;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-controls button:hover:not(:disabled) {
+  background-color: #004999;
+}
+
+/* Loading and error messages */
+.loading-message,
+.error-message {
+  text-align: center;
+  margin: 15px 0;
+  font-size: 16px;
+  color: #666;
+}
+.error-message {
+  color: #cc0000;
+}

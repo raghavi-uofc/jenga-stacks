@@ -49,11 +49,14 @@ export const registerUser = async (userData) => {
 };
 
 export const getProjectsByUserId = async (userId) => {
+   const token = localStorage.getItem("token");
+
   try {
     const response = await fetch(`${API_BASE_URL}/projects/user/${userId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -137,6 +140,77 @@ export const getProjectDetailsById = async (projectId) => {
       `API Fetch Project Details Error for ID ${projectId}:`,
       error
     );
+    throw error;
+  }
+};
+
+export const getAllUsers = async () => {
+  const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+         Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch users.");
+    }
+
+    const data = await response.json();
+    
+    // Return the 'users' array from the API response
+    return data.users || [];
+  } catch (error) {
+    console.error("API Fetch Users Error:", error);
+    throw error;
+  }
+};
+
+
+export const deleteUserById = async (userId) => {
+    const token = localStorage.getItem("token");
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+         Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to delete user.");
+    }
+
+    return true; // Indicate successful deletion
+  } catch (error) {
+    console.error("API Delete User Error:", error);
+    throw error;
+  }
+};
+export const resetPassword = async (old_password, new_password, token) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/reset_password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Pass token for authentication
+      },
+      body: JSON.stringify({ old_password, new_password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to reset password");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
     throw error;
   }
 };

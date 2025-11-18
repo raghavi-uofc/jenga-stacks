@@ -70,7 +70,7 @@
   position: absolute;
   top: 50px;
   right: 0;
-  background-color: var(--bg-white);
+  background-color: white;
   border: 1px solid #ccc;
   border-radius: 5px;
   width: 200px;

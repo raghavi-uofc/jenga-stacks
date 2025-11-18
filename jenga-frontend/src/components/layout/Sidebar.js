@@ -1,38 +1,24 @@
 import React from "react";
 import "./Layout.css";
 
-const Sidebar = ({ isAdmin, activeLink }) => {
+const Sidebar = ({ isAdmin, activeLink, onNavigate }) => {
   return (
     <div className="sidebar">
       <nav className="sidebar-nav">
-        <a
-          href="/projects"
-          className={`sidebar-link ${
-            activeLink === "projects" ? "active" : ""
-          }`}
+        <span
+          className={`sidebar-link ${activeLink === "projects" ? "active" : ""}`}
+          onClick={() => onNavigate("projects")}
         >
           Projects
-        </a>
-        <a
-          href="/team-members"
-          className={`sidebar-link ${
-            activeLink === "team-members" ? "active" : ""
-          }`}
-        >
-          Team Members
-        </a>
-
+        </span>
         {isAdmin && (
           <div className="admin-section">
-            <span className="admin-label">admin only</span>
-            <a
-              href="/manage-accounts"
-              className={`sidebar-link ${
-                activeLink === "manage-accounts" ? "active" : ""
-              }`}
+            <span
+              className={`sidebar-link ${activeLink === "manage-accounts" ? "active" : ""}`}
+              onClick={() => onNavigate("manage-accounts")}
             >
               Manage Accounts
-            </a>
+            </span>
           </div>
         )}
       </nav>
