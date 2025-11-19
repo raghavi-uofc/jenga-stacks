@@ -22,14 +22,25 @@ def create_app():
     app.config['MYSQL_USER'] =  'root'
     app.config['MYSQL_PASSWORD'] =  ''#localdb password
     app.config['MYSQL_DB'] = 'jengadb'
-    app.config['SECRET_KEY'] =  'your secret key'
+    
+    app.config['SECRET_KEY'] =  'jenga_secret_key!'
+    
     app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
     app.config['GEMINI_API_KEY'] = 'AIzaSyByKY2_Vbkw1kTzyhL7J3pS16weWvzciFU'
     mysql.init_app(app)
     bcrypt.init_app(app)
     swagger.init_app(app)
     auth_utils.configure_serializer(app.config['SECRET_KEY'])
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000"
+            ]
+        }
+    })
+
     auth.verify_token(verify_auth_token)
 
     from routes.user_routes import user_bp
@@ -55,4 +66,4 @@ def verify_auth_token(token):
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host="localhost", port=int("5000"))
+    app.run(host="localhost", port=int("5050"))
