@@ -42,3 +42,6 @@ jenga-frontend/.env
 jenga-frontend/.env.*
 
 .venv/
+
+__pycache__/
+*.pyc
