@@ -115,14 +115,9 @@ const UserProfilePage = () => {
           readOnly
         />
 
-        <button
-          type="button"
-          onClick={handleResetPassword}
-          className="secondary-action-link"
-          disabled={loading}
-        >
-          Reset Password
-        </button>
+     <Link to="/reset-password" className="secondary-action-link">
+  Reset Password
+</Link>
 
         <div className="save-button-area">
           <button type="submit" className="save-button" disabled={loading}>

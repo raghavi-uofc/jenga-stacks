@@ -15,6 +15,7 @@ import TeamMemberDetail from "./features/team/TeamMemberDetail";
 import UserManagementDashboard from "./features/admin/UserManagementDashboard";
 import UserProfilePage from "./features/user/UserProfilePage";
 import ProjectEditWrapper from "./features/projects/ProjectEditWrapper";
+import ResetPassword from "./features/user/ResetPassword";
 export const AuthContext = createContext(null);
 
 const useAuth = () => {
@@ -108,7 +109,7 @@ const AppRouter = () => {
               <Route path="/profile" element={<UserProfilePage />} />
 
               {/* Admin Only Routes (Nested Protection) */}
-              <Route element={<PrivateRoutes isAdminRequired={true} />}>
+              <Route element={<PrivateRoutes isAdminRequired={false} />}>
                 <Route
                   path="/manage-accounts"
                   element={<UserManagementDashboard />}
@@ -116,7 +117,7 @@ const AppRouter = () => {
               </Route>
             </Route>
           </Route>
-
+<Route path="/reset-password" element={<ResetPassword />} />
           {/* 3. Catch All (404) */}
           <Route path="*" element={<h1>404: Page Not Found</h1>} />
         </Routes>

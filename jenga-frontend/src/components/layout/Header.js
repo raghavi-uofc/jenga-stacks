@@ -26,13 +26,7 @@ const Header = () => {
         <h1>JengaStacks / Dashboard</h1>
       </div>
       <div className="header-actions">
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search Project"
-            className="search-input"
-          />
-        </div>
+       
 
         <Link to="/projects/new" className="new-project-button">
           New Project

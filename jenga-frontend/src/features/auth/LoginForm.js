@@ -51,9 +51,6 @@ const LoginForm = ({ switchToRegister }) => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <a href="#" className="forgot-password">
-          Forgot Password
-        </a>
         <button
           className="auth-button primary-button"
           type="submit"

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ProjectForm.css';
 import { useNavigate } from 'react-router-dom';
+
 const initialMemberRow = {
   member: '',
   language: '',
   framework: '',
 };
 
-const initialFormData = {
+const emptyFormData = {
   name: '',
   goal_description: '',
   requirement_description: '',
@@ -17,14 +18,38 @@ const initialFormData = {
   team_members: [initialMemberRow],
 };
 
-const ProjectForm = () => {
-  const navigate = useNavigate(); 
-  const [formData, setFormData] = useState(initialFormData);
+const ProjectForm = ({ initialData = null, isEditMode = false }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(emptyFormData);
   const [llmSuggestions, setLlmSuggestions] = useState(null);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [projectId, setProjectId] = useState(null);
 
+  // Initialize form data with initialData on mount or when it changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        goal_description: initialData.goal_description || '',
+        requirement_description: initialData.requirement_description || '',
+        budget: initialData.budget || '',
+        start_date: initialData.start_date || '',
+        end_date: initialData.end_date || '',
+        team_members:
+          initialData.team_members && initialData.team_members.length > 0
+            ? initialData.team_members
+            : [initialMemberRow],
+      });
+      setLlmSuggestions(null);
+    } else {
+      setFormData(emptyFormData);
+      setLlmSuggestions(null);
+    }
+  }, [initialData]);
+
+  // Use projectId from initialData if present, else null (for new projects)
+const [projectId, setProjectId] = useState(initialData?.id || null);  
+const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -61,11 +86,14 @@ const ProjectForm = () => {
     setLoading(true);
     setStatus('draft');
 
+    const token = localStorage.getItem('token');
+
     try {
       const response = await fetch('http://localhost:5000/api/projects/save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           id: projectId,
@@ -83,9 +111,13 @@ const ProjectForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setProjectId(data.project_id);
+        // Update projectId so that subsequent submits/updates know the project
+        if (!projectId) {
+          // Only update if it was a new project create
+          setProjectId(data.project_id);
+          navigate(`/projects/${data.project_id}`);
+        }
         alert('Project saved as draft!');
-        navigate(`api/projects/${data.project_id}`);
       } else {
         alert(`Error: ${data.error}`);
       }
@@ -102,11 +134,14 @@ const ProjectForm = () => {
     setLoading(true);
     setStatus('submitted');
 
+    const token = localStorage.getItem('token');
+
     try {
       const response = await fetch('http://localhost:5000/api/projects/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           id: projectId,
@@ -124,8 +159,12 @@ const ProjectForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setProjectId(data.project_id);
+        if (!projectId) {
+          setProjectId(data.project_id);
+          navigate(`/projects/${data.project_id}`);
+        }
         setLlmSuggestions(data.llm_response);
+        setProjectStatus('submitted');
         alert('Project submitted successfully!');
       } else {
         alert(`Error: ${data.error}`);
@@ -140,7 +179,7 @@ const ProjectForm = () => {
 
   return (
     <div className="project-form-container">
-      <h2 className="form-title">Project Form</h2>
+      <h2 className="form-title">{isEditMode ? 'Edit Project' : 'New Project'}</h2>
 
       <form className="project-form" onSubmit={(e) => e.preventDefault()}>
         <input
@@ -269,7 +308,7 @@ const ProjectForm = () => {
             type="button"
             onClick={handleSaveDraft}
             className="draft-button"
-            disabled={loading}
+            disabled={loading || projectStatus === 'submitted'}
           >
             {loading && status === 'draft' ? 'Saving...' : 'Save as Draft'}
           </button>
@@ -277,7 +316,7 @@ const ProjectForm = () => {
             type="button"
             onClick={handleSubmit}
             className="submit-button"
-            disabled={loading}
+           disabled={loading || projectStatus === 'submitted'}
           >
             {loading && status !== 'draft' ? 'Submitting...' : 'Submit'}
           </button>

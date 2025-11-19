@@ -22,6 +22,7 @@ def get_user_by_email(email):
     from app import mysql
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM User WHERE email=%s", (email,))
+    
     user = cur.fetchone()
     cur.close()
     return user
@@ -36,14 +37,28 @@ def get_user_by_id(user_id):
 
 
 def verify_token(token):
+    # (Move print to the very top to test raw input)
+    print(f"1. Raw token received in auth_utils: '{token}'") 
+    
     if not token:
+        print("1.1 Token is missing.")
         return False
     try:
+        # Check if the token can be loaded
         email = serializer.loads(token)
-    except:
+    except Exception as e:
+        # --- NEW: Print the actual exception ---
+        print(f"1.2 Token loading failed/expired: {e}") 
         return False
+        
     user = get_user_by_email(email)
-    if user and user['status'] == 'active':
+    
+    print(f"2. User retrieved from DB: {user}")
+
+    if user and user.get('status') == 'active':
         g.current_user = user
+        print(f"3. User authenticated and g.current_user set to {user['email']}")
         return True
+    
+    print("4. User not found or inactive.")
     return False
