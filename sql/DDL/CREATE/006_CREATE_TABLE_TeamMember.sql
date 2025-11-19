@@ -1,9 +1,9 @@
 DROP TABLE IF EXISTS jengadb.TeamMember;
 
 CREATE TABLE jengadb.TeamMember(
-    fkTeamId INT NOT NULL,
-    fkMemberId INT NOT NULL,
-    PRIMARY KEY (fkTeamId, fkMemberId),
-    FOREIGN KEY (fkTeamId) REFERENCES jengadb.Team(id),
-    FOREIGN KEY (fkMemberId) REFERENCES jengadb.Member(id)
+    teamId INT NOT NULL,
+    memberId INT NOT NULL,
+    PRIMARY KEY (teamId, memberId),
+    FOREIGN KEY (teamId) REFERENCES jengadb.Team(id),
+    FOREIGN KEY (memberId) REFERENCES jengadb.Member(id)
 )

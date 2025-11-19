@@ -7,4 +7,5 @@ CREATE TABLE jengadb.Member(
     dateTimeCreated datetime DEFAULT CURRENT_TIMESTAMP,
     dateTimeModified datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
-)
+);
+

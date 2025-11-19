@@ -1,5 +1,3 @@
--- SQL Script to insert 50 Member records into jengadb.Member
-
 INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Alice', 'Johnson');
 INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Charlie', 'Williams');
 INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Diana', 'Brown');
@@ -49,3 +47,4 @@ INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Vera', 'Mitchell');
 INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Will', 'Roberts');
 INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Zara', 'Carter');
 INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Adam', 'Phillips');
+INSERT INTO jengadb.Member (firstName, lastName) VALUES ('Juan', 'Cruz');
