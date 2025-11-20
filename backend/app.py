@@ -9,15 +9,50 @@ from flask_httpauth import HTTPTokenAuth
 from flasgger import Swagger
 
 from dotenv import load_dotenv
+import argparse
 import os
 
-load_dotenv()
 mysql = MySQL()
 bcrypt = Bcrypt()
 auth = HTTPTokenAuth(scheme='Bearer')
 swagger = Swagger()
 import auth_utils
+
+def load_environment():
+    """
+    Determine the environment from:
+    1. CLI argument (--env)
+    2. Environment variable (FLASK_ENV)
+    3. Default ('local')
+    """
+
+    # Parse command-line args
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--env", help="Environment to run (local/dev/test/prod)")
+    args, _ = parser.parse_known_args()  # allow Flask internals to pass args
+
+    # Highest priority: CLI argument
+    if args.env:
+        return args.env
+
+    # Second: environment variable
+    if "FLASK_ENV" in os.environ:
+        return os.environ["FLASK_ENV"]
+
+    # Fallback: local
+    return "local"
+
 def create_app():
+    env = load_environment()
+
+    # Load GENERIC base .env
+    load_dotenv('.env')
+
+    # Load environment-specific .env.{env}
+    env_file = f".env.{env}"
+    if os.path.exists(env_file):
+        load_dotenv(env_file, override=True)
+
     app = Flask(__name__)
     app.config['MYSQL_HOST'] = os.getenv("DB_HOST") #IPv4 address
     app.config['MYSQL_USER'] =  os.getenv("DB_USER")

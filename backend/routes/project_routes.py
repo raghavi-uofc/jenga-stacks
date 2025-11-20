@@ -341,7 +341,7 @@ def list_projects_by_user(user_id):
 
     if status in ['draft', 'submitted']:
         cur.execute(
-            "SELECT * FROM Project WHERE userId=%s AND project_status=%s ORDER BY dateTimeUpdated DESC",
+            "SELECT * FROM Project WHERE userId=%s AND status=%s ORDER BY dateTimeUpdated DESC",
             (user_id, status)
         )
     else:

@@ -36,8 +36,8 @@ const ProjectEditWrapper = () => {
           const normalizedProject = {
             id: projectData.id,
             name: projectData.name || '',
-            goal_description: projectData.goal_description || '',
-            requirement_description: projectData.requirement_description || '',
+            goalDescription: projectData.goalDescription || '',
+            requirementDescription: projectData.requirementDescription || '',
             budget: projectData.budget?.ceiling || '',
             start_date: projectData.timeframe?.start_date
               ? new Date(projectData.timeframe.start_date).toISOString().slice(0, 10)

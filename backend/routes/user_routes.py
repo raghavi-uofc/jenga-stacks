@@ -75,7 +75,6 @@ def register():
     }
 })
 def login():
-    logging.warn('DEBUGGING Login request')
     data = request.get_json()
     if not data:
         data = request.get_json()
@@ -96,7 +95,7 @@ def login():
         return jsonify({'error': 'Invalid credentials'}), 401
 
     token = generate_token(user)
-    logging.warn('DEBUGGING Completing Login request')
+
     return jsonify({'token': token, 'user': {'id': user['id'], 'email': user['email'], 'first_name': user['firstName'], 'last_name': user['lastName'], 'role': user['role']}})
 
 @user_bp.route('/users/reset_password', methods=['POST'])

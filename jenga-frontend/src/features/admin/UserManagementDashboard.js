@@ -98,7 +98,7 @@ const UserManagementDashboard = () => {
                 pagedUsers.map((user) => (
                   <tr key={user.id}>
                     <td>{user.email}</td>
-                    <td>{user.first_name }</td>
+                    <td>{user.firstName} {user.lastName}</td>
                     <td className="actions-col">
                       <UserActionsMenu userId={user.id} onDelete={handleDeleteUser} />
                     </td>

@@ -32,8 +32,6 @@ def get_users(cursor):
     cursor.execute(sql)
     rows = cursor.fetchall()
 
-    logging.warn('get_users rows: {}'.format(rows))
-    #return rows
     # Convert result to list of dicts
     users = []
     for row in rows:
