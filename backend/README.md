@@ -21,8 +21,13 @@ $ sudo apt update && sudo apt install pkg-config
 $ pip install -r requirements.txt
 ```
 
-4. Start server:
+4. Start server with AWS databsse connection :
 
+```bash
+python3 app.py --env=dev
+```
+
+Start server with local databsse connection :
 ```bash
 python3 app.py
 ```
