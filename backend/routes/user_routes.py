@@ -1,10 +1,13 @@
 # Databricks notebook source
 # routes/user_routes.py - User related routes
+import logging
 
 from flask import Blueprint, request, jsonify, g
 from app import mysql, bcrypt, auth
 from auth_utils import get_user_by_email, generate_token, serializer
 from flasgger import swag_from
+
+from models.user_model import insert_user
 
 user_bp = Blueprint('user', __name__)
 
@@ -50,10 +53,7 @@ def register():
 
     pw_hash = bcrypt.generate_password_hash(password).decode('utf-8')
     cur = mysql.connection.cursor()
-    cur.execute(
-        "INSERT INTO User (first_name, last_name, email, password,role) VALUES (%s, %s, %s, %s, %s)",
-        (first_name, last_name, email, pw_hash, role)
-    )
+    insert_user(cur, first_name, last_name, email, pw_hash, role)
     mysql.connection.commit()
     cur.close()
     return jsonify({'message': 'User created successfully'}), 201
@@ -75,7 +75,10 @@ def register():
     }
 })
 def login():
+    logging.warn('DEBUGGING Login request')
     data = request.get_json()
+    if not data:
+        data = request.get_json()
     if not data:
         return jsonify({'error': 'Missing JSON body'}), 400
 
@@ -93,7 +96,8 @@ def login():
         return jsonify({'error': 'Invalid credentials'}), 401
 
     token = generate_token(user)
-    return jsonify({'token': token, 'user': {'id': user['id'], 'email': user['email'], 'first_name': user['first_name'], 'last_name': user['last_name'], 'role': user['role']}})
+    logging.warn('DEBUGGING Completing Login request')
+    return jsonify({'token': token, 'user': {'id': user['id'], 'email': user['email'], 'first_name': user['firstName'], 'last_name': user['lastName'], 'role': user['role']}})
 
 @user_bp.route('/users/reset_password', methods=['POST'])
 def reset_password():

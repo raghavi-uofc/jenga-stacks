@@ -3,6 +3,7 @@
 
 from flask import g
 from itsdangerous import URLSafeTimedSerializer
+from models.user_model import get_user_by_email, get_user_by_id
 
 serializer = None
 tokens = {}
@@ -18,21 +19,21 @@ def generate_token(user):
     tokens[token] = user['id']
     return token
 
-def get_user_by_email(email):
-    from app import mysql
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM User WHERE email=%s", (email,))
-    
-    user = cur.fetchone()
-    cur.close()
-    return user
-
-def get_user_by_id(user_id):
-    from app import mysql
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT id, first_name, last_name, email, role, status, password FROM User WHERE id=%s", (user_id,))
-    user = cur.fetchone()
-    cur.close()
+# def get_user_by_email(email):
+#     from app import mysql
+#     cur = mysql.connection.cursor()
+#     cur.execute("SELECT * FROM User WHERE email=%s", (email,))
+#
+#     user = cur.fetchone()
+#     cur.close()
+#     return user
+#
+# def get_user_by_id(user_id):
+#     from app import mysql
+#     cur = mysql.connection.cursor()
+#     cur.execute("SELECT id, first_name, last_name, email, role, status, password FROM User WHERE id=%s", (user_id,))
+#     user = cur.fetchone()
+#     cur.close()
     return user
 
 

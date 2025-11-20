@@ -8,6 +8,7 @@ from google import genai
 from google.genai import types
 import json
 from auth_utils import get_user_by_email, serializer
+from models.project_model import get_project_details
 
 project_bp = Blueprint('project', __name__)
 
@@ -388,34 +389,36 @@ def get_project_details(project_id):
     if error_response:
         return error_response, status_code
 
-    sql_query = """
-    SELECT
-        P.id AS project_id,
-        P.name,
-        P.goal_description,
-        P.requirement_description,
-        P.project_status,
-        B.floor AS budget_floor,
-        B.ceiling AS budget_ceiling,
-        Tf.startTime AS project_start_date,
-        Tf.endTime AS project_end_date,
-        M.firstName AS member_first_name,
-        M.lastName AS member_last_name
-    FROM
-        Project P
-    LEFT JOIN Budget B ON P.id = B.projectId
-    LEFT JOIN Timeframe Tf ON P.id = Tf.projectId
-    LEFT JOIN Team Tm ON P.id = Tm.projectId
-    LEFT JOIN TeamMember TmM ON Tm.id = TmM.TeamId
-    LEFT JOIN Member M ON TmM.MemberId = M.id
-    WHERE
-        P.id = %s AND P.userId = %s
-    """
+    # sql_query = """
+    # SELECT
+    #     P.id AS project_id,
+    #     P.name,
+    #     P.goal_description,
+    #     P.requirement_description,
+    #     P.project_status,
+    #     B.floor AS budget_floor,
+    #     B.ceiling AS budget_ceiling,
+    #     Tf.startTime AS project_start_date,
+    #     Tf.endTime AS project_end_date,
+    #     M.firstName AS member_first_name,
+    #     M.lastName AS member_last_name
+    # FROM
+    #     Project P
+    # LEFT JOIN Budget B ON P.id = B.projectId
+    # LEFT JOIN Timeframe Tf ON P.id = Tf.projectId
+    # LEFT JOIN Team Tm ON P.id = Tm.projectId
+    # LEFT JOIN TeamMember TmM ON Tm.id = TmM.TeamId
+    # LEFT JOIN Member M ON TmM.MemberId = M.id
+    # WHERE
+    #     P.id = %s AND P.userId = %s
+    # """
+    #
+    # cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    # cur.execute(sql_query, (project_id, user['id']))
+    # detailed_rows = cur.fetchall()
+    # cur.close()
 
-    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cur.execute(sql_query, (project_id, user['id']))
-    detailed_rows = cur.fetchall()
-    cur.close()
+    detailed_rows = get_project_details(mysql, project_id, user['id'])
 
     if not detailed_rows:
         return jsonify({'message': 'Project not found'}), 404
