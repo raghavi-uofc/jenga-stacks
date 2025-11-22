@@ -21,10 +21,16 @@ npm install
 npm run start
 ```
 
+---
 
 ## Backend
 
-### 1. Create virtual environment:
+### 1. Navigate to the backend directory
+``` bash
+cd backend
+```
+
+### 2. Create virtual environment: 
 
 ```bash
 python3 -m venv .venv
@@ -53,3 +59,8 @@ With local database connection:
 ```bash
 python3 app.py
 ```
+
+---
+
+## Database
+...
