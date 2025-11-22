@@ -15,8 +15,6 @@ export const submitProject = async (projectData) => {
 
     const data = await response.json();
 
-    console.log("Raw response:", response);
-
     if (!response.ok) {
       throw new Error(data.error || "Failed to submit project");
     }
@@ -115,7 +113,6 @@ export const getProjectsByUserId = async (userId) => {
     }
 
     const data = await response.json();
-    console.log("Fetched Data:", data);
 
     return data.projects; // Return the array of projects
   } catch (error) {

@@ -152,9 +152,6 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
       team_members: formData.team_members,
     };
 
-    // debug log
-    console.log("Submitting project with payload:", payload);
-
     try {
       const data = await submitProject(payload);
 
