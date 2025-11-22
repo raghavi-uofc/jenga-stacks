@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react"; 
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../Router";
 import { updateUserProfile } from "../../api/authApi";
@@ -7,32 +7,33 @@ import "./UserProfilePage.css";
 const UserProfilePage = () => {
   const { user, login } = useContext(AuthContext);
 
+  // Initialize formData with safe defaults
   const [formData, setFormData] = useState({
     email: user?.email || "",
     first_name: user?.first_name || "",
     last_name: user?.last_name || "",
+    password: "", // for security verification
   });
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Update formData if user changes
   useEffect(() => {
     if (user) {
-      setFormData({
-        email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
-      });
+      setFormData((prev) => ({
+        ...prev,
+        email: user?.email,
+        first_name: user?.first_name,
+        last_name: user?.last_name,
+      }));
     }
   }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     setMessage("");
     setError(null);
   };
@@ -43,24 +44,27 @@ const UserProfilePage = () => {
     setMessage("");
     setError(null);
 
-    const { email, first_name, last_name } = formData;
-    const apiBody = { email, first_name, last_name };
+    const { email, first_name, last_name, password } = formData;
+
+    if (!email || !password) {
+      setError("Email and password are required.");
+      setLoading(false);
+      return;
+    }
+
+    const apiBody = { email, first_name, last_name, password };
 
     try {
       const updatedUser = await updateUserProfile(apiBody);
       const token = localStorage.getItem("token");
-      login(token, updatedUser);
-
+      login(token, { ...user, ...updatedUser });
       setMessage("Profile updated successfully!");
+      setFormData((prev) => ({ ...prev, password: "" })); // clear password field
     } catch (err) {
       setError(err.message || "Could not save profile changes.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleResetPassword = () => {
-    alert("Password reset link sent to your email.");
   };
 
   return (
@@ -76,14 +80,7 @@ const UserProfilePage = () => {
       <h2 className="profile-title">Profile</h2>
 
       {message && <p className="success-message">{message}</p>}
-      {error && (
-        <p
-          className="error-message"
-          style={{ color: "red", fontWeight: "bold" }}
-        >
-          {error}
-        </p>
-      )}
+      {error && <p className="error-message">{error}</p>}
 
       <form className="profile-form" onSubmit={handleSave}>
         <input
@@ -115,9 +112,19 @@ const UserProfilePage = () => {
           readOnly
         />
 
-     <Link to="/reset-password" className="secondary-action-link">
-  Reset Password
-</Link>
+        <input
+          type="password"
+          name="password"
+          placeholder="Current Password (for security verification)"
+          value={formData.password}
+          onChange={handleChange}
+          className="profile-input"
+          required
+        />
+
+        <Link to="/reset-password" className="secondary-action-link">
+          Reset Password
+        </Link>
 
         <div className="save-button-area">
           <button type="submit" className="save-button" disabled={loading}>

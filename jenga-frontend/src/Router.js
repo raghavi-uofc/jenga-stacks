@@ -110,6 +110,7 @@ const AppRouter = () => {
 
               {/* User Feature Routes (Profile uses DashboardLayout but renders only Outlet) */}
               <Route path="/profile" element={<UserProfilePage />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Admin Only Routes (Nested Protection) */}
               <Route element={<PrivateRoutes isAdminRequired={false} />}>
@@ -120,7 +121,7 @@ const AppRouter = () => {
               </Route>
             </Route>
           </Route>
-<Route path="/reset-password" element={<ResetPassword />} />
+
           {/* 3. Catch All (404) */}
           <Route path="*" element={<h1>404: Page Not Found</h1>} />
         </Routes>

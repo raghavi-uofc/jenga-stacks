@@ -43,7 +43,8 @@ const Header = () => {
           {isMenuOpen && (
             <div className="profile-dropdown-menu">
               <div className="user-info">
-                Signed in as: <strong>{user?.email || "Guest"}</strong>
+                <strong> {user?.first_name || ""} {user?.last_name || ""} </strong>
+                ({user?.email || "Guest"})
               </div>
               <button className="menu-item" onClick={handleProfileClick}>
                 Profile

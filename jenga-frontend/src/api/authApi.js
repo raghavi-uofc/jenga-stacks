@@ -91,6 +91,9 @@ export const deleteProject = async (projectId) => {
     throw error;
   }
 };
+
+
+// Update user profile information
 export const updateUserProfile = async (userData) => {
   const token = localStorage.getItem("token");
 
@@ -101,21 +104,28 @@ export const updateUserProfile = async (userData) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify(userData), // includes current_password now
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to update profile.");
+    const text = await response.text(); // get raw text first
+    let data;
+    try {
+      data = JSON.parse(text); // try parsing as JSON
+    } catch {
+      data = { error: text }; // fallback if not JSON
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to update profile.");
+    }
+
     return data;
   } catch (error) {
     console.error("API Profile Update Error:", error);
     throw error;
   }
 };
+
 
 export const getProjectDetailsById = async (projectId) => {
   try {

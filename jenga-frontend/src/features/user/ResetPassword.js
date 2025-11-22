@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { resetPassword } from "../../api/authApi";
 import "./ResetPassword.css";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ const ResetPassword = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 const navigate = useNavigate();
+
 const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
@@ -31,7 +33,15 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="reset-password-container">
-      <h2>Reset Password</h2>
+      <div className="profile-breadcrumb">
+        <Link to="/profile" className="breadcrumb-link">
+          Profile
+        </Link>
+        <span className="breadcrumb-separator"> / </span>
+        <span className="breadcrumb-current">ResetPassword</span>
+      </div>
+
+      <h2 className="reset-password-title">Reset Password</h2>
       {message && <p className="success-message">{message}</p>}
       {error && <p className="error-message">{error}</p>}
 

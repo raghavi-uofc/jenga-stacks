@@ -11,6 +11,7 @@ from models.user_model import insert_user
 
 user_bp = Blueprint('user', __name__)
 
+# USER REGISTRATION
 @user_bp.route('/register', methods=['POST'])
 @swag_from({
     'tags': ['User'],
@@ -58,6 +59,9 @@ def register():
     cur.close()
     return jsonify({'message': 'User created successfully'}), 201
 
+
+
+# USER LOGIN
 @user_bp.route('/login', methods=['POST'])
 @swag_from({
     'tags': ['User'],
@@ -98,6 +102,9 @@ def login():
 
     return jsonify({'token': token, 'user': {'id': user['id'], 'email': user['email'], 'first_name': user['firstName'], 'last_name': user['lastName'], 'role': user['role']}})
 
+
+
+# RESET PASSWORD
 @user_bp.route('/users/reset_password', methods=['POST'])
 def reset_password():
     # Extract token from Authorization header
@@ -137,56 +144,68 @@ def reset_password():
 
     return jsonify({'message': 'Password updated successfully'}), 200
 
+
+# UPDATE USER PROFILE (FirstName and LastName) WITH PASSWORD CHECK
 @user_bp.route('/users/profile', methods=['PUT'])
-@auth.login_required
 @swag_from({
     'tags': ['User'],
-    'parameters': [{'name': 'body', 'in': 'body', 'required': True, 'schema': {
-        'type': 'object',
-        'properties': {
-            'first_name': {'type': 'string'},
-            'last_name': {'type': 'string'},
-            'email': {'type': 'string'}
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {
+            'type': 'object',
+            'properties': {
+                'email': {'type': 'string'},  # required to identify user
+                'first_name': {'type': 'string'},
+                'last_name': {'type': 'string'},
+                'password': {'type': 'string'}  # required for security check
+            }
         }
-    }}],
+    }],
     'responses': {
         200: {'description': 'Profile updated'},
-        400: {'description': 'Invalid input'},
-        401: {'description': 'Unauthorized'}
+        400: {'description': 'Invalid input or incorrect password'},
+        404: {'description': 'User not found'}
     }
 })
 def update_profile():
     data = request.get_json()
+    email = data.get('email')
     first_name = data.get('first_name')
     last_name = data.get('last_name')
-    email = data.get('email')
+    password = data.get('password')  # password for verification
 
-    if not (first_name or last_name or email):
-        return jsonify({'error': 'No data to update'}), 400
+    if not email or not password:
+        return jsonify({'error': 'Email and password are required'}), 400
 
-    user = get_user_by_email(g.current_user['email'])
+    user = get_user_by_email(email)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
-    if email and email != user['email']:
-        if get_user_by_email(email):
-            return jsonify({'error': 'Email already used'}), 400
+    # Verify password
+    if not bcrypt.check_password_hash(user['password'], password):
+        return jsonify({'error': 'Incorrect password'}), 400
 
-    cur = mysql.connection.cursor()
-    query = "UPDATE User SET "
-    params = []
     updates = []
+    params = []
+
     if first_name:
-        updates.append("first_name=%s")
+        updates.append("firstName=%s")
         params.append(first_name)
     if last_name:
-        updates.append("last_name=%s")
+        updates.append("lastName=%s")
         params.append(last_name)
-    if email:
-        updates.append("email=%s")
-        params.append(email)
-    query += ", ".join(updates) + " WHERE id=%s"
+
+    if not updates:
+        return jsonify({'error': 'No data to update'}), 400
+
+    query = "UPDATE User SET " + ", ".join(updates) + " WHERE id=%s"
     params.append(user['id'])
 
+    cur = mysql.connection.cursor()
     cur.execute(query, tuple(params))
     mysql.connection.commit()
     cur.close()
+
     return jsonify({'message': 'Profile updated successfully'})
