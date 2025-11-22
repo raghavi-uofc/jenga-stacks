@@ -1,5 +1,6 @@
-const API_BASE_URL = "http://localhost:5050/api";
+import { API_BASE_URL } from "./config";
 
+// User login
 export const loginUser = async (email, password) => {
   try {
     const response = await fetch(`${API_BASE_URL}/login`, {
@@ -24,6 +25,7 @@ export const loginUser = async (email, password) => {
   }
 };
 
+// User registration
 export const registerUser = async (userData) => {
   try {
     const response = await fetch(`${API_BASE_URL}/register`, {
@@ -48,6 +50,7 @@ export const registerUser = async (userData) => {
   }
 };
 
+// Get all projects for a specific user by user ID
 export const getProjectsByUserId = async (userId) => {
    const token = localStorage.getItem("token");
 
@@ -71,6 +74,9 @@ export const getProjectsByUserId = async (userId) => {
     throw error;
   }
 };
+
+// ? Delete a project by its ID
+// not tested yet
 export const deleteProject = async (projectId) => {
   try {
     const token = localStorage.getItem("token");
@@ -127,33 +133,8 @@ export const updateUserProfile = async (userData) => {
 };
 
 
-export const getProjectDetailsById = async (projectId) => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch project details.");
-    }
-
-    const data = await response.json();
-    return data.project; // Return the nested project object
-  } catch (error) {
-    console.error(
-      `API Fetch Project Details Error for ID ${projectId}:`,
-      error
-    );
-    throw error;
-  }
-};
-
+// ADMIN ROUTES
+// Get all users (admin only)
 export const getAllUsers = async () => {
   const token = localStorage.getItem("token");
   try {
@@ -179,7 +160,7 @@ export const getAllUsers = async () => {
   }
 };
 
-
+// Delete a user by ID (admin only)
 export const deleteUserById = async (userId) => {
     const token = localStorage.getItem("token");
   try {
@@ -202,6 +183,8 @@ export const deleteUserById = async (userId) => {
     throw error;
   }
 };
+
+
 
 // Reset user password
 export const resetPassword = async (old_password, new_password, token) => {

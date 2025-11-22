@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { deleteProject } from "../../api/authApi";
+import { deleteProject } from "../../api/projectApi";
 import "./ProjectCard.css";
 
 const ProjectCard = ({ project, onDelete }) => {
@@ -15,7 +15,7 @@ const ProjectCard = ({ project, onDelete }) => {
     statusKey === "draft" ? "status-draft" : "status-submitted";
 
   const handleCardClick = () => {
-    navigate(`/projects/${project.id}/edit`);
+    navigate(`/projects/${project.id}`);
   };
 
   const handleDelete = async (e) => {
@@ -34,7 +34,7 @@ const ProjectCard = ({ project, onDelete }) => {
     setIsMenuOpen(false);
 
     try {
-      await deleteProject(project.userId, project.id);
+      await deleteProject(project.id);
       onDelete(project.id);
     } catch (error) {
       alert(
@@ -92,12 +92,11 @@ const ProjectCard = ({ project, onDelete }) => {
           {project.project_status || "Draft"}
         </div>
 
-        {project.goal_description && (
+        {project.goalDescription && (
           <p className="status-note">
-            {project.goal_description.substring(0, 50)}...
+            {project.goalDescription.substring(0, 50)}...
           </p>
         )}
-        <p className="status-note">status of the project plan</p>
       </div>
     </div>
   );

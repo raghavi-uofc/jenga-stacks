@@ -1,8 +1,14 @@
 :root {
     --header-height: 60px;
+    --primary-color: #a78128;
+    --primary-color-hover: #886c21;
+    --primary-color-light: #fff8e7;
 }
 
-html, body, #root, .app-container {
+html,
+body,
+#root,
+.app-container {
     height: 100%;
     margin: 0;
     box-sizing: border-box;
@@ -10,12 +16,19 @@ html, body, #root, .app-container {
 
 .app-container {
     display: flex;
-    flex-direction: column; 
-    height: 100% !important; 
+    flex-direction: column;
+    height: 100% !important;
 }
 
 .layout-body {
     display: flex;
     height: 100%;
-    overflow: hidden; 
+    min-height: 100vh-var(--header-height);
+}
+
+.page-content {
+    flex: 1;
+    padding: 30px 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }

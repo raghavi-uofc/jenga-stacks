@@ -1,9 +1,16 @@
 .project-form-container {
-  padding: 30px 20px;
   max-width: 800px;
+  width: 90%;
   margin: 0 auto;
-  background-color: #f8f9fa;
+  /* horizontal center */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 25px;
+  background-color: #fff;
   border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .form-title {
@@ -16,24 +23,29 @@
 .project-form {
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 5px;
   background-color: white;
   padding: 30px;
-  border: 1px solid #e9ecef;
-  border-radius: 6px;
+  width: 100%;
+  max-width: 600px;
+  /* keeps form narrower than container */
+  box-sizing: border-box;
 }
 
-.form-section {
-  padding: 15px 0;
-  border-bottom: 1px dashed #dee2e6;
+
+.project-form h4 {
+  margin-bottom: 5px;
+  color: #212529;
 }
 
-.form-section h3 {
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  color: #495057;
-  border-left: 4px solid #007bff;
-  padding-left: 10px;
+/* Budge style */
+.budget-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.budget-wrapper input {
+  flex: 1;
 }
 
 .project-form input[type="text"],
@@ -55,10 +67,12 @@
 .project-form input:focus,
 .project-form textarea:focus,
 .project-form select:focus {
-  border-color: #80bdff;
+  border-color: var(--primary-color);
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.2rem var(--primary-color-light);
 }
+
+/* Tabel Styles */
 
 .project-form label {
   display: block;
@@ -79,10 +93,12 @@
   width: 100%;
   border-collapse: collapse;
   background-color: white;
+  font-size: 0.95em;
 }
 
 .member-table th {
-  padding: 12px 8px;
+  padding: 12px 12px;
+  /* a bit more padding */
   border-bottom: 2px solid #ced4da;
   text-align: left;
   background-color: #f8f9fa;
@@ -90,13 +106,17 @@
 }
 
 .member-table td {
-  padding: 0;
+  padding: 6px 8px;
+  /* add vertical padding for readability */
   border-bottom: 1px solid #dee2e6;
+  vertical-align: middle;
+  /* aligns input nicely */
 }
 
 .member-table td input {
   width: 100%;
-  padding: 10px 8px;
+  padding: 8px 10px;
+  /* slightly smaller than before for balanced spacing */
   border: none;
   margin: 0;
   border-radius: 0;
@@ -104,6 +124,7 @@
   font-size: 0.95em;
   background-color: transparent;
 }
+
 
 .action-column {
   width: 40px;
@@ -127,20 +148,21 @@
 }
 
 .add-member-button {
-  background-color: #28a745;
+  background-color: var(--primary-color);
   color: white;
   border: none;
   padding: 8px 15px;
   margin-top: 15px;
-  margin-left: 10px;
+  margin-bottom: 15px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 1em;
   transition: background-color 0.2s;
+  width: 100%;
 }
 
 .add-member-button:hover {
-  background-color: #218838;
+  background-color: var(--primary-color-hover);
 }
 
 .action-buttons {
@@ -155,7 +177,7 @@
 .draft-button,
 .submit-button {
   padding: 12px 25px;
-  border: 1px solid #007bff;
+  border: 1px solid var(--primary-color);
   border-radius: 4px;
   cursor: pointer;
   font-size: 1.1em;
@@ -164,7 +186,7 @@
 
 .draft-button {
   background-color: white;
-  color: #007bff;
+  color: var(--primary-color);
 }
 
 .draft-button:hover {
@@ -172,28 +194,28 @@
 }
 
 .submit-button {
-  background-color: #007bff;
+  background-color: var(--primary-color);
   color: white;
   border: none;
 }
 
 .submit-button:hover {
-  background-color: #0056b3;
+  background-color: var(--primary-color-hover);
 }
 
 .suggestions-area {
   margin-top: 50px;
   padding: 25px;
-  border: 2px dashed #007bff;
-  background-color: #e9f7ff;
+  border: 2px dashed var(--primary-color);
+  background-color: var(--primary-color-light);
   border-radius: 6px;
 }
 
 .suggestions-title {
   font-size: 1.8em;
   margin-bottom: 15px;
-  color: #007bff;
-  border-bottom: 1px solid #b8daff;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--primary-color);
   padding-bottom: 5px;
 }
 

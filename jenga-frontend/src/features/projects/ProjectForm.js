@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './ProjectForm.css';
 import { useNavigate } from 'react-router-dom';
+import { saveProjectDraft } from '../../api/projectApi';
 
 const initialMemberRow = {
   member: '',
@@ -8,13 +9,22 @@ const initialMemberRow = {
   framework: '',
 };
 
+const defaultStartDate = new Date();
+const defaultEndDate = new Date();
+defaultStartDate.setDate(defaultStartDate.getDate() + 1);
+defaultEndDate.setDate(defaultEndDate.getDate() + 100);
+
+const formatDate = (d) => d.toISOString().split("T")[0];
+
 const emptyFormData = {
   name: '',
   goal_description: '',
   requirement_description: '',
-  budget: '',
-  start_date: '',
-  end_date: '',
+  budget_floor: '',
+  budget_ceiling: '',
+
+  start_date: formatDate(defaultStartDate),
+  end_date: formatDate(defaultEndDate),
   team_members: [initialMemberRow],
 };
 
@@ -32,7 +42,8 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
         name: initialData.name || '',
         goal_description: initialData.goal_description || '',
         requirement_description: initialData.requirement_description || '',
-        budget: initialData.budget || '',
+        budget_floor: initialData.budget_floor || '',
+        budget_ceiling: initialData.budget_ceiling || '',
         start_date: initialData.start_date || '',
         end_date: initialData.end_date || '',
         team_members:
@@ -48,8 +59,8 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
   }, [initialData]);
 
   // Use projectId from initialData if present, else null (for new projects)
-const [projectId, setProjectId] = useState(initialData?.id || null);  
-const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
+  const [projectId, setProjectId] = useState(initialData?.id || null);  
+  const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -81,54 +92,47 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
     setFormData({ ...formData, team_members: newMembers });
   };
 
+  // Handle saving draft
   const handleSaveDraft = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setStatus('draft');
+    setStatus("draft");
 
-    const token = localStorage.getItem('token');
+    // Build the payload exactly like before
+    const draftPayload = {
+      id: projectId,
+      name: formData.name,
+      goal_description: formData.goal_description,
+      requirement_description: formData.requirement_description,
+      budget_floor: formData.budget_floor,
+      budget_ceiling: formData.budget_ceiling,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      team_members: formData.team_members,
+    };
 
     try {
-      const response = await fetch('http://localhost:5000/api/projects/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          id: projectId,
-          name: formData.name,
-          goal_description: formData.goal_description,
-          requirement_description: formData.requirement_description,
-          budget: formData.budget,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
-          team_members: formData.team_members,
-          project_status: 'draft',
-        }),
-      });
+      const result = await saveProjectDraft(draftPayload);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Update projectId so that subsequent submits/updates know the project
+      if (result.ok) {
         if (!projectId) {
-          // Only update if it was a new project create
-          setProjectId(data.project_id);
-          navigate(`/projects/${data.project_id}`);
+          setProjectId(result.project_id);
+          navigate(`/projects/${result.project_id}`);
         }
-        alert('Project saved as draft!');
+        alert("Project saved as draft!");
       } else {
-        alert(`Error: ${data.error}`);
+        alert(`Error: ${result.error}`);
       }
-    } catch (error) {
-      console.error('Error saving draft:', error);
-      alert('Failed to save draft');
+    } catch (err) {
+      console.error("Error saving draft:", err);
+      alert("Failed to save draft");
     } finally {
       setLoading(false);
     }
   };
 
+
+  // Handle final submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -137,23 +141,27 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
     const token = localStorage.getItem('token');
 
     try {
+      // Prepare payload
+      const payload = {
+        name: formData.name,
+        goal_description: formData.goal_description,
+        requirement_description: formData.requirement_description,
+        budget_floor: formData.budget_floor,
+        budget_ceiling: formData.budget_ceiling,
+        start_date: formData.start_date,
+        end_date: formData.end_date,
+        team_members: formData.team_members,
+        project_status: 'submitted',
+        ...(projectId ? { id: projectId } : {}), // include id only if editing
+      };
+
       const response = await fetch('http://localhost:5000/api/projects/submit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          id: projectId,
-          name: formData.name,
-          goal_description: formData.goal_description,
-          requirement_description: formData.requirement_description,
-          budget: formData.budget,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
-          team_members: formData.team_members,
-          project_status: 'submitted',
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -163,11 +171,11 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
           setProjectId(data.project_id);
           navigate(`/projects/${data.project_id}`);
         }
-        setLlmSuggestions(data.llm_response);
+        setLlmSuggestions(data.llm_response || null);
         setProjectStatus('submitted');
         alert('Project submitted successfully!');
       } else {
-        alert(`Error: ${data.error}`);
+        alert(`Error: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error submitting project:', error);
@@ -177,11 +185,14 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
     }
   };
 
+
+  // Render form
   return (
     <div className="project-form-container">
       <h2 className="form-title">{isEditMode ? 'Edit Project' : 'New Project'}</h2>
 
       <form className="project-form" onSubmit={(e) => e.preventDefault()}>
+        <h4>Project Name <span style={{ color: 'red' }}>*</span></h4>
         <input
           type="text"
           name="name"
@@ -192,6 +203,7 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
           required
         />
 
+        <h4>Project Goal <span style={{ color: 'red' }}>*</span></h4>
         <textarea
           name="goal_description"
           placeholder="Project Goal/Idea"
@@ -202,6 +214,7 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
           required
         />
 
+        <h4>Project Requirements</h4>
         <textarea
           name="requirement_description"
           placeholder="Requirements"
@@ -213,7 +226,6 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
         />
 
         <div className="table-wrapper">
-          <h4>Team Members</h4>
           <table className="member-table">
             <thead>
               <tr>
@@ -269,20 +281,34 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
             </tbody>
           </table>
           <button type="button" onClick={addMemberRow} className="add-member-button">
-            + Add Row
+            + Add Member
           </button>
         </div>
 
-        <input
-          type="number"
-          name="budget"
-          placeholder="Budget"
-          value={formData.budget}
-          onChange={handleInputChange}
-          className="form-input"
-          required
-        />
+        <h4>Budge</h4>
+        <div className="budget-wrapper">
+          <input
+            type="number"
+            name="budget_floor"
+            placeholder="Budget Floor"
+            value={formData.budget_floor}
+            onChange={handleInputChange}
+            className="form-input"
+            required
+          />
+          <p> - </p>
+          <input
+            type="number"
+            name="budget_ceiling"
+            placeholder="Budget Ceiling"
+            value={formData.budget_ceiling}
+            onChange={handleInputChange}
+            className="form-input"
+            required
+          />
+        </div>
 
+        <h4>Start Date <span style={{ color: 'red' }}>*</span> </h4>
         <input
           type="date"
           name="start_date"
@@ -293,6 +319,7 @@ const [projectStatus, setProjectStatus] = useState(initialData?.status || '');
           required
         />
 
+        <h4>End Date <span style={{ color: 'red' }}>*</span> </h4>
         <input
           type="date"
           name="end_date"

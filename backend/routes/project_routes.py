@@ -8,7 +8,8 @@ from google import genai
 from google.genai import types
 import json
 from auth_utils import get_user_by_email, serializer
-from models.project_model import get_project_details
+from models.project_model import get_project_details_rows
+from datetime import datetime
 
 project_bp = Blueprint('project', __name__)
 
@@ -67,153 +68,203 @@ Return a single, well-structured answer in Markdown with clear headings and bull
 """
 
 
+# Helpers 
+def extract_project_fields(data):
+    return {
+        "id": data.get("id"),
+        "name": data.get("name"),
+        "requirement_description": data.get("requirement_description"),
+        "goal_description": data.get("goal_description"),
+        "budget_floor": data.get("budget_floor"),
+        "budget_ceiling": data.get("budget_ceiling"),
+        "start_date": data.get("start_date") or data.get("startDate"),
+        "end_date": data.get("end_date") or data.get("endDate"),
+        "team_members": data.get("team_members") or data.get("teamMembers") or [],
+    }
+
+
+def validate_project_fields(fields):
+    name = fields["name"]
+    goal = fields["goal_description"]
+    floor = fields["budget_floor"]
+    ceiling = fields["budget_ceiling"]
+    start = fields["start_date"]
+    end = fields["end_date"]
+    team = fields["team_members"]
+
+    if not name:
+        raise ValueError("Project name is required")
+    if not goal:
+        raise ValueError("Goal description is required")
+
+    # ----- budget -----
+    if floor not in (None, ""):
+        floor = float(floor)
+        if floor < 0:
+            raise ValueError("Budget floor cannot be negative")
+
+    if ceiling not in (None, ""):
+        ceiling = float(ceiling)
+        if ceiling < 0:
+            raise ValueError("Budget ceiling cannot be negative")
+
+    if floor not in (None, "") and ceiling not in (None, ""):
+        if floor > ceiling:
+            raise ValueError("Budget floor cannot exceed budget ceiling")
+
+    fields["budget_floor"] = floor
+    fields["budget_ceiling"] = ceiling
+
+    # ----- dates -----
+    def parse_date(value):
+        try:
+            return datetime.fromisoformat(value)
+        except:
+            raise ValueError("Dates must be in format YYYY-MM-DD")
+
+    now = datetime.now()
+
+    if start:
+        s = parse_date(start)
+        if s < now:
+            raise ValueError("Start date must be in the future")
+        fields["start_date"] = s
+
+    if end:
+        e = parse_date(end)
+        if e < now:
+            raise ValueError("End date must be in the future")
+        fields["end_date"] = e
+
+    if start and end:
+        if fields["start_date"] >= fields["end_date"]:
+            raise ValueError("Start date must be earlier than end date")
+
+    # ----- team -----
+    if not isinstance(team, list):
+        raise ValueError("team_members must be a list")
+
+    return fields
+
+
+def save_team_and_members(cur, project_id, members):
+    if not members:
+        return
+
+    cur.execute("SELECT id FROM Team WHERE projectId=%s", (project_id,))
+    row = cur.fetchone()
+
+    if row:
+        team_id = row["id"]
+        cur.execute("DELETE FROM TeamMember WHERE TeamId=%s", (team_id,))
+    else:
+        cur.execute("INSERT INTO Team (projectId, name) VALUES (%s, %s)", (project_id, "Default Team"))
+        team_id = cur.lastrowid
+
+    for m in members:
+        full_name = m.get("member") or m.get("name") or ""
+        language = m.get("language")
+        framework = m.get("framework")
+
+        first, *rest = full_name.split(" ", 1)
+        last = rest[0] if rest else ""
+
+        cur.execute("SELECT id FROM Member WHERE firstName=%s AND lastName=%s", (first, last))
+        row = cur.fetchone()
+
+        if row:
+            member_id = row["id"]
+        else:
+            cur.execute("INSERT INTO Member (firstName, lastName) VALUES (%s, %s)", (first, last))
+            member_id = cur.lastrowid
+
+        cur.execute("INSERT INTO TeamMember (TeamId, MemberId) VALUES (%s, %s)", (team_id, member_id))
+
+        if language:
+            cur.execute(
+                "INSERT INTO Skillset (memberId, skill, category) VALUES (%s, %s, %s)",
+                (member_id, language, "Language")
+            )
+        if framework and framework.lower() != "none":
+            cur.execute(
+                "INSERT INTO Skillset (memberId, skill, category) VALUES (%s, %s, %s)",
+                (member_id, framework, "Framework")
+            )
+
+def save_timeframe(cur, project_id, start, end):
+    cur.execute("SELECT id FROM Timeframe WHERE projectId=%s", (project_id,))
+    exists = cur.fetchone()
+
+    start = start if start not in (None, "") else None
+    end = end if end not in (None, "") else None
+
+    if exists:
+        cur.execute(
+            "UPDATE Timeframe SET startTime=%s, endTime=%s WHERE projectId=%s",
+            (start, end, project_id)
+        )
+    else:
+        cur.execute(
+            "INSERT INTO Timeframe (projectId, startTime, endTime) VALUES (%s, %s, %s)",
+            (project_id, start, end)
+        )
+
+
+def save_budget(cur, project_id, floor, ceiling):
+    if floor is None or ceiling is None:
+        return
+
+    cur.execute("SELECT id FROM Budget WHERE projectId=%s", (project_id,))
+    exists = cur.fetchone()
+
+    if exists:
+        cur.execute(
+            "UPDATE Budget SET floor=%s, ceiling=%s WHERE projectId=%s",
+            (floor, ceiling, project_id)
+        )
+    else:
+        cur.execute(
+            "INSERT INTO Budget (projectId, floor, ceiling) VALUES (%s, %s, %s)",
+            (project_id, floor, ceiling)
+        )
+
+
 def save_project_complete(data, user_id, project_status):
-    """
-    Saves project with budget, timeframe, team, and members.
-    Returns project_id.
-    """
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
 
     try:
-        project_id = data.get('id')
-        name = data.get('name')
-        requirement_description = data.get('requirement_description')
-        goal_description = data.get('goal_description')
-        budget = data.get('budget')
+        fields = extract_project_fields(data)
+        fields = validate_project_fields(fields)
 
-        # Accept both snake_case and camelCase for dates
-        start_date = data.get('start_date') or data.get('startDate')
-        end_date = data.get('end_date') or data.get('endDate')
+        project_id = fields["id"]
 
-        # Accept both team_members and teamMembers
-        team_members = data.get('team_members') or data.get('teamMembers') or []
-
-        # Validate required fields
-        if not name:
-            raise ValueError("Project name is required")
-        if not requirement_description:
-            raise ValueError("Requirement description is required")
-        if not goal_description:
-            raise ValueError("Goal description is required")
-
-        # 1. Create or Update Project
+        # Save or update Project
         if project_id:
             cur.execute(
                 """
                 UPDATE Project 
-                SET name=%s, requirement_description=%s, goal_description=%s, project_status=%s 
+                SET name=%s, requirementDescription=%s, goalDescription=%s, status=%s 
                 WHERE id=%s AND userId=%s
                 """,
-                (name, requirement_description, goal_description, project_status, project_id, user_id)
+                (fields["name"], fields["requirement_description"], fields["goal_description"],
+                 project_status, project_id, user_id)
             )
             if cur.rowcount == 0:
                 raise ValueError("Project not found or unauthorized")
         else:
             cur.execute(
                 """
-                INSERT INTO Project 
-                    (name, requirement_description, goal_description, project_status, userId) 
+                INSERT INTO Project (name, requirementDescription, goalDescription, status, userId)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (name, requirement_description, goal_description, project_status, user_id)
+                (fields["name"], fields["requirement_description"], fields["goal_description"],
+                 project_status, user_id)
             )
             project_id = cur.lastrowid
 
-        # 2. Save or Update Budget
-        if budget is not None:
-            cur.execute("SELECT id FROM Budget WHERE projectId=%s", (project_id,))
-            budget_exists = cur.fetchone()
-
-            # Convert budget to decimal for floor and ceiling,
-            # or insert same value for both if only one number
-            budget_floor = float(budget)
-            budget_ceiling = float(budget)
-
-            if budget_exists:
-                cur.execute(
-                    "UPDATE Budget SET floor=%s, ceiling=%s WHERE projectId=%s",
-                    (budget_floor, budget_ceiling, project_id)
-                )
-            else:
-                cur.execute(
-                    "INSERT INTO Budget (projectId, floor, ceiling) VALUES (%s, %s, %s)",
-                    (project_id, budget_floor, budget_ceiling)
-                )
-
-        # 3. Save or Update Timeframe
-        if start_date and end_date:
-            cur.execute("SELECT id FROM Timeframe WHERE projectId=%s", (project_id,))
-            timeframe_exists = cur.fetchone()
-
-            if timeframe_exists:
-                cur.execute(
-                    "UPDATE Timeframe SET startTime=%s, endTime=%s WHERE projectId=%s",
-                    (start_date, end_date, project_id)
-                )
-            else:
-                cur.execute(
-                    "INSERT INTO Timeframe (projectId, startTime, endTime) VALUES (%s, %s, %s)",
-                    (project_id, start_date, end_date)
-                )
-
-        # 4. Save Team and Members
-        if team_members:
-            cur.execute("SELECT id FROM Team WHERE projectId=%s", (project_id,))
-            team_row = cur.fetchone()
-
-            if team_row:
-                team_id = team_row['id']
-                # Delete existing members (fresh insert)
-                cur.execute("DELETE FROM TeamMember WHERE TeamId=%s", (team_id,))
-                cur.execute("DELETE FROM Skillset WHERE memberId IN "
-                            "(SELECT MemberId FROM TeamMember WHERE TeamId=%s)", (team_id,))
-            else:
-                team_name = "Default Team"  # Could come from data if desired
-                cur.execute("INSERT INTO Team (projectId, name) VALUES (%s, %s)", (project_id, team_name))
-                team_id = cur.lastrowid
-
-            for member in team_members:
-                member_name = member.get('member') or member.get('name') or ''
-                language = member.get('language')
-                framework = member.get('framework')
-                if member_name:
-                    name_parts = member_name.split(' ', 1)
-                    first_name = name_parts[0]
-                    last_name = name_parts[1] if len(name_parts) > 1 else ''
-
-                    cur.execute(
-                        "SELECT id FROM Member WHERE firstName=%s AND lastName=%s",
-                        (first_name, last_name)
-                    )
-                    member_row = cur.fetchone()
-
-                    if member_row:
-                        member_id = member_row['id']
-                    else:
-                        cur.execute(
-                            "INSERT INTO Member (firstName, lastName) VALUES (%s, %s)",
-                            (first_name, last_name)
-                        )
-                        member_id = cur.lastrowid
-
-                    # Link member to team - no skills column here
-                    cur.execute(
-                        "INSERT INTO TeamMember (TeamId, MemberId) VALUES (%s, %s)",
-                        (team_id, member_id)
-                    )
-
-                    # Insert language skill if provided
-                    if language:
-                        cur.execute(
-                            "INSERT INTO Skillset (memberId, skill, category) VALUES (%s, %s, %s)",
-                            (member_id, language, 'Language')
-                        )
-                    # Insert framework skill if provided and not 'None'
-                    if framework and framework.lower() != 'none':
-                        cur.execute(
-                            "INSERT INTO Skillset (memberId, skill, category) VALUES (%s, %s, %s)",
-                            (member_id, framework, 'Framework')
-                        )
+        save_budget(cur, project_id, fields["budget_floor"], fields["budget_ceiling"])
+        save_timeframe(cur, project_id, fields["start_date"], fields["end_date"])
+        save_team_and_members(cur, project_id, fields["team_members"])
 
         mysql.connection.commit()
         return project_id
@@ -221,6 +272,7 @@ def save_project_complete(data, user_id, project_status):
     except Exception as e:
         mysql.connection.rollback()
         raise e
+
     finally:
         cur.close()
 
@@ -233,15 +285,19 @@ def save_project_draft():
         return error_response, status_code
 
     data = request.get_json() or {}
+    print("Save Draft Data:", data)
 
-    if not all([data.get('name'), data.get('requirement_description'), data.get('goal_description')]):
+    if not all([data.get('name'), data.get('goal_description')]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
+        # Save project with status 'draft'
         project_id = save_project_complete(data, user['id'], 'draft')
         return jsonify({'message': 'Project saved as draft', 'project_id': project_id}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
 
 
 # Submit project endpoint with LLM call
@@ -326,6 +382,8 @@ def submit_project():
         mysql.connection.rollback()
         return jsonify({'error': str(e)}), 500
 
+
+
 @project_bp.route('/projects/user/<int:user_id>', methods=['GET'])
 def list_projects_by_user(user_id):
     user, error_response, status_code = authenticate_token()
@@ -359,22 +417,30 @@ def list_projects_by_user(user_id):
 @project_bp.route('/projects/<int:project_id>', methods=['DELETE'])
 def delete_project(project_id):
     user, error_response, status_code = authenticate_token()
+    
+    print("Authenticated user:", user)
+    print("Project ID:", project_id)
+    
     if error_response:
         return error_response, status_code
 
     cur = mysql.connection.cursor()
 
-    cur.execute("SELECT id FROM Project WHERE id=%s AND userId=%s", (project_id, user['id']))
-    if not cur.fetchone():
+    # Delete project only if it belongs to the authenticated user
+    cur.execute("DELETE FROM Project WHERE id=%s AND userId=%s", (project_id, user['id']))
+    
+    if cur.rowcount == 0:
         cur.close()
-        return jsonify({'error': 'Project not found'}), 404
+        return jsonify({'error': 'Project not found or you do not have permission'}), 404
 
-    cur.execute("DELETE FROM Project WHERE id=%s", (project_id,))
     mysql.connection.commit()
     cur.close()
 
     return jsonify({'message': 'Project deleted'}), 200
 
+
+
+# Get project details endpoint
 @project_bp.route('/projects/<int:project_id>', methods=['GET'])
 @swag_from({
     'tags': ['Project'],
@@ -389,36 +455,7 @@ def get_project_details(project_id):
     if error_response:
         return error_response, status_code
 
-    # sql_query = """
-    # SELECT
-    #     P.id AS project_id,
-    #     P.name,
-    #     P.goal_description,
-    #     P.requirement_description,
-    #     P.project_status,
-    #     B.floor AS budget_floor,
-    #     B.ceiling AS budget_ceiling,
-    #     Tf.startTime AS project_start_date,
-    #     Tf.endTime AS project_end_date,
-    #     M.firstName AS member_first_name,
-    #     M.lastName AS member_last_name
-    # FROM
-    #     Project P
-    # LEFT JOIN Budget B ON P.id = B.projectId
-    # LEFT JOIN Timeframe Tf ON P.id = Tf.projectId
-    # LEFT JOIN Team Tm ON P.id = Tm.projectId
-    # LEFT JOIN TeamMember TmM ON Tm.id = TmM.TeamId
-    # LEFT JOIN Member M ON TmM.MemberId = M.id
-    # WHERE
-    #     P.id = %s AND P.userId = %s
-    # """
-    #
-    # cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    # cur.execute(sql_query, (project_id, user['id']))
-    # detailed_rows = cur.fetchall()
-    # cur.close()
-
-    detailed_rows = get_project_details(mysql, project_id, user['id'])
+    detailed_rows = get_project_details_rows(mysql, project_id, user['id'])
 
     if not detailed_rows:
         return jsonify({'message': 'Project not found'}), 404
@@ -427,13 +464,11 @@ def get_project_details(project_id):
     project_details = {
         'id': first_row['project_id'],
         'name': first_row['name'],
-        'goal_description': first_row['goal_description'],
-        'requirement_description': first_row['requirement_description'],
-        'status': first_row['project_status'],
-        'budget': {
-            'floor': first_row['budget_floor'],
-            'ceiling': first_row['budget_ceiling']
-        },
+        'goal_description': first_row['goalDescription'],
+        'requirement_description': first_row['requirementDescription'],
+        'status': first_row['status'],
+        'budget_floor': first_row['budget_floor'],
+        'budget_ceiling': first_row['budget_ceiling'],
         'timeframe': {
             'start_date': first_row['project_start_date'],
             'end_date': first_row['project_end_date']
@@ -441,15 +476,30 @@ def get_project_details(project_id):
         'team_members': []
     }
 
-    seen_members = set()
+    # Aggregate members and their skills
+    members_dict = {}  # key: member full name
+
     for row in detailed_rows:
-        if row['member_first_name']:
-            member_name = f"{row['member_first_name']} {row['member_last_name']}"
-            if member_name not in seen_members:
-                project_details['team_members'].append({
-                    'first_name': row['member_first_name'],
-                    'last_name': row['member_last_name']
-                })
-                seen_members.add(member_name)
+        if row['member_first_name'] and row['member_last_name']:
+            full_name = f"{row['member_first_name']} {row['member_last_name']}"
+            if full_name not in members_dict:
+                members_dict[full_name] = {
+                    'member': full_name,
+                    'language': None,
+                    'framework': None
+                }
+
+            # Assign skill if present
+            skill = row.get('skill')
+            category = row.get('category')
+            if skill and category:
+                if category == 'Language':
+                    members_dict[full_name]['language'] = skill
+                elif category == 'Framework':
+                    members_dict[full_name]['framework'] = skill
+
+    # Convert dict to list
+    project_details['team_members'] = list(members_dict.values())
+
 
     return jsonify({'project': project_details})

@@ -1,13 +1,17 @@
 .main-header {
+  top: 0;
+  left: 0;
+  right: 0;
   height: var(--header-height);
-  background-color: var(--bg-white);
+  background-color: white;
   border-bottom: 1px solid #e0e0e0;
   padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  z-index: 10;
+  z-index: 100;
+  /* above everything */
 }
 
 .header-branding h1 {
@@ -38,7 +42,7 @@
 .new-project-button {
   text-decoration: none;
   background-color: var(--primary-color);
-  color: #886c21;
+  color: white;
   padding: 8px 15px;
   border-radius: 5px;
   font-weight: bold;
@@ -46,7 +50,7 @@
 }
 
 .new-project-button:hover {
-  background-color: #859eb8;
+  background-color: var(--primary-color-hover);
 }
 
 .profile-dropdown-container {
@@ -115,12 +119,15 @@
 
 .sidebar {
   width: var(--sidebar-width);
-  background-color: #a78128;
+  background-color: var(--primary-color);
   color: white;
-  padding-top: 0;
+  padding-top: --header-height;
   flex-shrink: 0;
-  height: 100%;
-  min-height: 100%;
+  /* full viewport minus topbar */
+  position: sticky;
+  /* sticks when scrolling */
+  top: var(--header-height);
+  /* start below the topbar */
   overflow-y: auto;
 }
 
@@ -139,11 +146,11 @@
 }
 
 .sidebar-link:hover {
-  background-color: #886c21;
+  background-color: var(--primary-color-hover);
 }
 
 .sidebar-link.active {
-  background-color: #886c21;
+  background-color: var(--primary-color-hover);
   color: white;
   border-left: 3px solid #f39c12;
   padding-left: 17px;

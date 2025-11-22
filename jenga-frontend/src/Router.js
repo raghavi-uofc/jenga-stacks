@@ -99,14 +99,14 @@ const AppRouter = () => {
               {/* Projects Feature Routes */}
               <Route path="/projects" element={<ProjectsDashboard />} />
               <Route path="/projects/new" element={<ProjectForm />} />
-              <Route path="/projects/:id/edit" element={<ProjectEditWrapper />} />
+              <Route path="/projects/:id" element={<ProjectEditWrapper />} />
 
-              {/* Team Members Feature Routes */}
+              {/* Team Members Feature Routes
               <Route
                 path="/team-members"
                 element={<h2>Team Members List Page (to be built)</h2>}
               />
-              <Route path="/team-members/:id" element={<TeamMemberDetail />} />
+              <Route path="/team-members/:id" element={<TeamMemberDetail />} /> */}
 
               {/* User Feature Routes (Profile uses DashboardLayout but renders only Outlet) */}
               <Route path="/profile" element={<UserProfilePage />} />
