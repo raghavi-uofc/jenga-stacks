@@ -4,7 +4,7 @@ import logging
 
 from flask import Blueprint, request, jsonify, g
 from app import mysql, bcrypt, auth
-from auth_utils import get_user_by_email, generate_token, serializer
+from utils.auth_utils import get_user_by_email, generate_token, serializer
 from flasgger import swag_from
 
 from models.user_model import insert_user

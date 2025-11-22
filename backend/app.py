@@ -16,7 +16,7 @@ mysql = MySQL()
 bcrypt = Bcrypt()
 auth = HTTPTokenAuth(scheme='Bearer')
 swagger = Swagger()
-import auth_utils
+import utils.auth_utils as auth_utils
 
 def load_environment():
     """

@@ -7,9 +7,12 @@ from flasgger import swag_from
 from google import genai
 from google.genai import types
 import json
-from auth_utils import get_user_by_email, serializer
-from models.project_model import get_project_details_rows
 from datetime import datetime
+from utils.auth_utils import get_user_by_email, serializer
+from utils.prompt_utils import contains_invalid_phrase
+from utils.gemini_utils import generate_project_plan
+from models.project_model import get_project_details_rows, get_latest_generation_response
+
 
 project_bp = Blueprint('project', __name__)
 
@@ -31,41 +34,6 @@ def authenticate_token():
 
     return user, None, None
 
-
-def build_team_summary(members):
-    """Create a human-readable team summary for the prompt."""
-    return "\n".join([
-        f"- {m.get('name', m.get('member', 'Unknown'))}: "
-        f"Language: {m.get('language', 'N/A')}, Framework: {m.get('framework', 'N/A')}"
-        for m in members
-    ])
-
-
-def build_project_prompt(data, team_summary: str) -> str:
-    """Build a unified prompt."""
-    start_date = data.get('start_date') or data.get('startDate')
-    end_date = data.get('end_date') or data.get('endDate')
-
-    return f"""
-Analyze the following software project and act as an expert AI Project Manager.
-
-Project Name: {data.get('name')}
-Project Goal: {data.get('goal_description')}
-Requirements: {data.get('requirement_description')}
-Budget: {data.get('budget')}
-Timeline: {start_date} to {end_date}
-
-Team Members and Skills:
-{team_summary}
-
-Your tasks:
-1. Recommend the best-fit programming languages, frameworks, and tools for frontend, backend, database, and devops.
-2. Assign clear roles to each team member based on their skills (e.g., Backend Developer, Frontend Developer, Full-Stack, DevOps, QA, Tech Lead).
-3. Provide a high-level project plan and milestone-based timeline.
-4. Mention potential risks and mitigation strategies.
-
-Return a single, well-structured answer in Markdown with clear headings and bullet points.
-"""
 
 
 # Helpers 
@@ -240,6 +208,11 @@ def save_project_complete(data, user_id, project_status):
 
         # Save or update Project
         if project_id:
+            # check ownership
+            cur.execute("SELECT 1 FROM Project WHERE id=%s AND userId=%s", (project_id, user_id))
+            if not cur.fetchone():
+                raise ValueError("Project not found or unauthorized")
+            
             cur.execute(
                 """
                 UPDATE Project 
@@ -249,8 +222,7 @@ def save_project_complete(data, user_id, project_status):
                 (fields["name"], fields["requirement_description"], fields["goal_description"],
                  project_status, project_id, user_id)
             )
-            if cur.rowcount == 0:
-                raise ValueError("Project not found or unauthorized")
+            
         else:
             cur.execute(
                 """
@@ -277,6 +249,10 @@ def save_project_complete(data, user_id, project_status):
         cur.close()
 
 
+########################
+###      ROUTES      ###
+########################
+
 # Save as draft endpoint
 @project_bp.route('/projects/save', methods=['POST'])
 def save_project_draft():
@@ -287,7 +263,7 @@ def save_project_draft():
     data = request.get_json() or {}
     print("Save Draft Data:", data)
 
-    if not all([data.get('name'), data.get('goal_description')]):
+    if not all([data.get('name'), data.get('goal_description'), data.get('start_date'), data.get('end_date')]):
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
@@ -299,7 +275,6 @@ def save_project_draft():
 
 
 
-
 # Submit project endpoint with LLM call
 @project_bp.route('/projects/submit', methods=['POST'])
 def submit_project():
@@ -308,68 +283,46 @@ def submit_project():
         return error_response, status_code
 
     data = request.get_json() or {}
+    print("Submit Project Data:", data)
+    print("\nUser:", user)
 
-    INVALID_KEYWORDS = {'dog', 'cat', 'pet', 'animal'}
-
-    def is_input_reasonable(data):
-        combined_text = ' '.join([
-            str(data.get('goal_description', '')).lower(),
-            str(data.get('requirement_description', '')).lower(),
-            str(data.get('name', '')).lower()
-        ])
-        if any(keyword in combined_text for keyword in INVALID_KEYWORDS):
-            return False
-        return True
-
-    # Validate inputs before LLM call
-    if not is_input_reasonable(data):
+    # Input validation
+    required_fields = ['name', 'goal_description', 'start_date', 'end_date']
+    if contains_invalid_phrase(data):
         return jsonify({'error': 'Input contains invalid or unsupported project topics'}), 400
-
-    if not all([data.get('name'), data.get('requirement_description'), data.get('goal_description')]):
+    if not all(data.get(field) for field in required_fields):
         return jsonify({'error': 'Missing required fields'}), 400
 
     try:
+        # Save project in "submitted" state
         project_id = save_project_complete(data, user['id'], 'submitted')
 
-        # Build prompt for Gemini
-        team_members = data.get('team_members') or data.get('teamMembers') or []
-        team_summary = build_team_summary(team_members)
-        prompt = build_project_prompt(data, team_summary)
+        # Generate project plan
+        prompt, llm_response_text = generate_project_plan(data)
 
-        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cur.execute("SELECT MAX(version) as max_version FROM Prompts WHERE projectId=%s", (project_id,))
-        row = cur.fetchone()
-        next_version = (row['max_version'] or 0) + 1
-
-        cur.execute(
-            "INSERT INTO Prompts (projectId, prompt, version) VALUES (%s, %s, %s)",
-            (project_id, prompt, next_version)
-        )
-        prompt_id = cur.lastrowid
-        mysql.connection.commit()
-
-        # Call Gemini API
-        api_key = current_app.config.get('GEMINI_API_KEY')
-        if not api_key:
-            return jsonify({'error': 'GEMINI_API_KEY not configured'}), 500
-
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction="You are an expert AI Project Manager. Respond with a structured Markdown plan only."
+        # Insert prompt with version
+        with mysql.connection.cursor(MySQLdb.cursors.DictCursor) as cur:
+            cur.execute(
+                "SELECT MAX(version) AS max_version FROM Prompt WHERE projectId=%s",
+                (project_id,)
             )
-        )
+            row = cur.fetchone()
+            next_version = (row['max_version'] or 0) + 1
 
-        llm_response_text = response.text
+            cur.execute(
+                "INSERT INTO Prompt (projectId, prompt, version) VALUES (%s, %s, %s)",
+                (project_id, prompt, next_version)
+            )
+            prompt_id = cur.lastrowid
+            mysql.connection.commit()
 
-        cur.execute(
-            "INSERT INTO GenerationHistory (projectId, promptId, llmResponse) VALUES (%s, %s, %s)",
-            (project_id, prompt_id, llm_response_text)
-        )
-        mysql.connection.commit()
-        cur.close()
+        # Save LLM response
+        with mysql.connection.cursor() as cur:
+            cur.execute(
+                "INSERT INTO GenerationHistory (projectId, promptId, llmResponse) VALUES (%s, %s, %s)",
+                (project_id, prompt_id, llm_response_text)
+            )
+            mysql.connection.commit()
 
         return jsonify({
             'message': 'Project submitted successfully',
@@ -383,7 +336,7 @@ def submit_project():
         return jsonify({'error': str(e)}), 500
 
 
-
+# list projects by user endpoint
 @project_bp.route('/projects/user/<int:user_id>', methods=['GET'])
 def list_projects_by_user(user_id):
     user, error_response, status_code = authenticate_token()
@@ -414,6 +367,7 @@ def list_projects_by_user(user_id):
 
 
 
+# Delete project endpoint
 @project_bp.route('/projects/<int:project_id>', methods=['DELETE'])
 def delete_project(project_id):
     user, error_response, status_code = authenticate_token()
@@ -452,7 +406,7 @@ def get_project_details(project_id):
     if error_response:
         return error_response, status_code
 
-    detailed_rows = get_project_details_rows(mysql, project_id, user['id'])
+    detailed_rows = get_project_details_rows(project_id, user['id'])
 
     if not detailed_rows:
         return jsonify({'message': 'Project not found'}), 404
@@ -470,6 +424,10 @@ def get_project_details(project_id):
         'end_date': first_row['project_end_date'],
         'team_members': []
     }
+    
+    # get gemini plan if status is submitted
+    if project_details['status'] == 'submitted':
+        project_details['llm_response'] = get_latest_generation_response(project_id)
 
     # Aggregate members and their skills
     members_dict = {}  # key: member name

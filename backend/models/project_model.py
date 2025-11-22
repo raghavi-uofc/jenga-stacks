@@ -1,12 +1,10 @@
 # models/project_model.py
-
 import MySQLdb.cursors
 from flask_mysqldb import MySQL
+from app import mysql
 
-# Assume `mysql` is initialized in your Flask app and imported here
-# from app import mysql
 
-def get_project_details_rows(mysql, project_id, user_id):
+def get_project_details_rows(project_id, user_id):
     """
     Fetch detailed project information, including budget, timeframe, and team members.
 
@@ -18,6 +16,7 @@ def get_project_details_rows(mysql, project_id, user_id):
     Returns:
         list of dict: Each dict represents a row of project details
     """
+    
     sql_query = """
 SELECT
     P.id AS project_id,
@@ -51,3 +50,19 @@ WHERE
     cur.close()
 
     return detailed_rows
+
+
+def get_latest_generation_response(project_id):
+    with mysql.connection.cursor(MySQLdb.cursors.DictCursor) as cur:
+            cur.execute(
+                """
+                SELECT GH.llmResponse
+                FROM GenerationHistory GH
+                WHERE GH.projectId=%s
+                ORDER BY GH.dateTimeCreated DESC
+                LIMIT 1
+                """,
+                (project_id,)
+            )
+            row = cur.fetchone()
+    return row['llmResponse'] if row else None

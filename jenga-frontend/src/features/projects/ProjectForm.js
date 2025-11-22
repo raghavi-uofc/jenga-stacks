@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './ProjectForm.css';
 import { useNavigate } from 'react-router-dom';
 import { saveProjectDraft } from '../../api/projectApi';
+import { submitProject } from '../../api/projectApi';
+import SuggestionsArea from './SuggestionsArea';
 
 const initialMemberRow = {
   member: '',
@@ -51,7 +53,7 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
             ? initialData.team_members
             : [initialMemberRow],
       });
-      setLlmSuggestions(null);
+      setLlmSuggestions(initialData.llm_response||null);
     } else {
       setFormData(emptyFormData);
       setLlmSuggestions(null);
@@ -132,53 +134,39 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
 
 
   // Handle final submission
+  // im here
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setStatus('submitted');
+    setStatus("submitted");
 
-    const token = localStorage.getItem('token');
+    const payload = {
+      id: projectId,
+      name: formData.name,
+      goal_description: formData.goal_description,
+      requirement_description: formData.requirement_description,
+      budget_floor: formData.budget_floor,
+      budget_ceiling: formData.budget_ceiling,
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      team_members: formData.team_members,
+    };
+
+    // debug log
+    console.log("Submitting project with payload:", payload);
 
     try {
-      // Prepare payload
-      const payload = {
-        name: formData.name,
-        goal_description: formData.goal_description,
-        requirement_description: formData.requirement_description,
-        budget_floor: formData.budget_floor,
-        budget_ceiling: formData.budget_ceiling,
-        start_date: formData.start_date,
-        end_date: formData.end_date,
-        team_members: formData.team_members,
-        project_status: 'submitted',
-        ...(projectId ? { id: projectId } : {}), // include id only if editing
-      };
+      const data = await submitProject(payload);
 
-      const response = await fetch('http://localhost:5000/api/projects/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (!projectId) {
-          setProjectId(data.project_id);
-          navigate(`/projects/${data.project_id}`);
-        }
-        setLlmSuggestions(data.llm_response || null);
-        setProjectStatus('submitted');
-        alert('Project submitted successfully!');
-      } else {
-        alert(`Error: ${data.error || 'Unknown error'}`);
+      if (!projectId) {
+        setProjectId(data.project_id);
+        navigate(`/projects/${data.project_id}`);
       }
+      setLlmSuggestions(data.llm_response || null);
+      setProjectStatus("submitted");
+      alert("Project submitted successfully!");
     } catch (error) {
-      console.error('Error submitting project:', error);
-      alert('Failed to submit project');
+      alert("Failed to submit project");
     } finally {
       setLoading(false);
     }
@@ -349,20 +337,7 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
         </div>
       </form>
 
-      <div className="suggestions-area">
-        <h3 className="suggestions-title">LLM Suggestions</h3>
-        {loading && status !== 'draft' ? (
-          <p>Generating suggestions...</p>
-        ) : llmSuggestions ? (
-          <div className="llm-response">
-            <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
-              {llmSuggestions}
-            </pre>
-          </div>
-        ) : (
-          <p>Submit your project to generate AI-powered suggestions.</p>
-        )}
-      </div>
+      <SuggestionsArea projectName={formData.name} llmSuggestions={llmSuggestions} loading={loading} status={projectStatus} />
     </div>
   );
 };

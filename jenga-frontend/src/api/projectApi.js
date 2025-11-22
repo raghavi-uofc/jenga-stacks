@@ -1,10 +1,32 @@
 import { API_BASE_URL } from "./config";
 
-export const createProject = async (projectData) => {
-}
+export const submitProject = async (projectData) => {
+  try {
+    const token = localStorage.getItem("token");
 
-export const updateProject = async (projectId, projectData) => {
-}
+    const response = await fetch(`${API_BASE_URL}/projects/submit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(projectData),
+    });
+
+    const data = await response.json();
+    
+    console.log("Raw response:", response);
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to submit project");
+    }
+
+    return data; // return the response to the caller
+  } catch (error) {
+    console.error("API Submit Project Error:", error);
+    throw error;
+  }
+};
 
 export const saveProjectDraft = async (projectData) => {
   try {
