@@ -165,6 +165,11 @@
   background-color: var(--primary-color-hover);
 }
 
+.add-member-button:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
 .action-buttons {
   display: flex;
   justify-content: flex-end;
@@ -189,6 +194,12 @@
   color: var(--primary-color);
 }
 
+.draft-button:disabled {
+  border-color: #adb5bd;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
+
 .draft-button:hover {
   background-color: #e9ecef;
 }
@@ -197,6 +208,12 @@
   background-color: var(--primary-color);
   color: white;
   border: none;
+}
+
+.submit-button:disabled {
+  background-color: #adb5bd;
+  border-color: #adb5bd;
+  cursor: not-allowed;
 }
 
 .submit-button:hover {

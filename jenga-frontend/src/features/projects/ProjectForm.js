@@ -267,7 +267,7 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
               ))}
             </tbody>
           </table>
-          <button type="button" onClick={addMemberRow} className="add-member-button">
+          <button type="button" disabled={loading || projectStatus === 'submitted'} onClick={addMemberRow} className="add-member-button">
             + Add Member
           </button>
         </div>

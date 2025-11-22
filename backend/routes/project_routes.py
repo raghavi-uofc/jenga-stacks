@@ -261,7 +261,7 @@ def save_project_draft():
         return error_response, status_code
 
     data = request.get_json() or {}
-    print("Save Draft Data:", data)
+    print("Saving Draft Data:", data)
 
     if not all([data.get('name'), data.get('goal_description'), data.get('start_date'), data.get('end_date')]):
         return jsonify({'error': 'Missing required fields'}), 400
@@ -283,8 +283,7 @@ def submit_project():
         return error_response, status_code
 
     data = request.get_json() or {}
-    print("Submit Project Data:", data)
-    print("\nUser:", user)
+    print("Submiting Project Data:", data)
 
     # Input validation
     required_fields = ['name', 'goal_description', 'start_date', 'end_date']
@@ -371,6 +370,7 @@ def list_projects_by_user(user_id):
 @project_bp.route('/projects/<int:project_id>', methods=['DELETE'])
 def delete_project(project_id):
     user, error_response, status_code = authenticate_token()
+    print("Deleting Project Request by User:", user)
     
     if error_response:
         return error_response, status_code
@@ -405,6 +405,8 @@ def get_project_details(project_id):
     user, error_response, status_code = authenticate_token()
     if error_response:
         return error_response, status_code
+    
+    print("Fetching Project Details for User:", user)
 
     detailed_rows = get_project_details_rows(project_id, user['id'])
 
