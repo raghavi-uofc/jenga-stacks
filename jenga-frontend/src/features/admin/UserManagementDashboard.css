@@ -1,14 +1,20 @@
 /* Container and layout */
 .app-layout {
-  font-family: Arial, sans-serif;
+  flex-grow: 1;
   padding: 20px;
-  background-color: #f9f9f9;
-  min-height: 100vh;
-  width: 200vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  align-content: start;
+  background-color: var(--bg-white);
 }
 
 .main-content-area {
-  max-width: 900px;
+  grid-column: 1 / -1;
+  /* take full width */
+  max-width: none;
+  width: 90%;
   margin: 0 auto;
   background: white;
   padding: 20px 30px;
@@ -149,7 +155,7 @@
 .pagination-controls button {
   padding: 6px 14px;
   cursor: pointer;
-  background: #0066cc;
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -162,7 +168,7 @@
 }
 
 .pagination-controls button:hover:not(:disabled) {
-  background-color: #004999;
+  background-color: var(--primary-color-hover);
 }
 
 /* Loading and error messages */
@@ -173,6 +179,7 @@
   font-size: 16px;
   color: #666;
 }
+
 .error-message {
   color: #cc0000;
 }

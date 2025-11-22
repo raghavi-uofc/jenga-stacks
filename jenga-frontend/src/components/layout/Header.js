@@ -20,6 +20,8 @@ const Header = () => {
     navigate("/auth");
   };
 
+  console.log("Header Render - User:", user);
+
   return (
     <header className="main-header">
       <div className="header-branding">
@@ -27,10 +29,12 @@ const Header = () => {
       </div>
       <div className="header-actions">
        
-
-        <Link to="/projects/new" className="new-project-button">
-          New Project
-        </Link>
+       
+        {user?.role !== 'admin' && (
+          <Link to="/projects/new" className="new-project-button">
+            New Project
+          </Link>
+        )}
 
         <div className="profile-dropdown-container">
           <div

@@ -8,12 +8,18 @@ const Sidebar = ({ isAdmin, activeLink }) => {
   return (
     <div className="sidebar">
       <nav className="sidebar-nav">
-        <span
-          className={`sidebar-link ${activeLink === "projects" ? "active" : ""}`}
-          onClick={() => navigate("/projects")}
-        >
-          Projects
-        </span>
+
+        {/* Only show Projects to non-admins */}
+        {!isAdmin && (
+          <span
+            className={`sidebar-link ${activeLink === "projects" ? "active" : ""}`}
+            onClick={() => navigate("/projects")}
+          >
+            Projects
+          </span>
+        )}
+
+        {/* Admin-only section */}
         {isAdmin && (
           <div className="admin-section">
             <span
@@ -24,6 +30,7 @@ const Sidebar = ({ isAdmin, activeLink }) => {
             </span>
           </div>
         )}
+
       </nav>
     </div>
   );

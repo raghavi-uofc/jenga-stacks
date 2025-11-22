@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from "react";
+import React, { useState, createContext, useContext } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,11 +14,11 @@ import Sidebar from "./components/layout/Sidebar";
 import AuthPage from "./features/auth/AuthPage";
 import ProjectsDashboard from "./features/projects/ProjectsDashboard";
 import ProjectForm from "./features/projects/ProjectForm";
-import TeamMemberDetail from "./features/team/TeamMemberDetail";
 import UserManagementDashboard from "./features/admin/UserManagementDashboard";
 import UserProfilePage from "./features/user/UserProfilePage";
 import ProjectEditWrapper from "./features/projects/ProjectEditWrapper";
 import ResetPassword from "./features/user/ResetPassword";
+
 export const AuthContext = createContext(null);
 
 const useAuth = () => {
@@ -45,24 +45,21 @@ const useAuth = () => {
   return { isAuthenticated, isAdmin, user, login, logout };
 };
 
-const PrivateRoutes = ({ isAdminRequired = false }) => {
+const PrivateRoutes = ({ adminOnly = false }) => {
   const { isAuthenticated, isAdmin } = useContext(AuthContext);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" />;
-  }
+  if (!isAuthenticated) return <Navigate to="/auth" replace />;
 
-  if (isAdminRequired && !isAdmin) {
-    return <Navigate to="/projects" />;
-  }
+  if (adminOnly && !isAdmin) return <Navigate to="/projects" replace />;
+  if (!adminOnly && isAdmin) return <Navigate to="/manage-accounts" replace />;
 
   return <Outlet />;
 };
 
+
 const DashboardLayout = () => {
   const { isAdmin } = useContext(AuthContext);
   const location = useLocation();
-
   const pathSegments = location.pathname.split("/");
   const activeLink = pathSegments[1] || "projects";
 
@@ -86,45 +83,33 @@ const AppRouter = () => {
     <AuthContext.Provider value={auth}>
       <Router>
         <Routes>
-          {/* 1. Public Routes */}
+          {/* Public */}
           <Route path="/auth" element={<AuthPage />} />
 
-          {/* 2. Protected Routes Group */}
-          <Route element={<PrivateRoutes />}>
-            {/* Routes that use the Sidebar layout */}
-            <Route element={<DashboardLayout />}>
-              {/* Root redirect */}
-              <Route path="/" element={<Navigate to="/projects" replace />} />
+          {/* Protected */}
+          <Route element={<DashboardLayout />}>
+            <Route path="/" element={<Navigate to={auth.isAdmin ? "/manage-accounts" : "/projects"} replace />} />
 
-              {/* Projects Feature Routes */}
+            {/* Non-admin */}
+            <Route element={<PrivateRoutes adminOnly={false} />}>
               <Route path="/projects" element={<ProjectsDashboard />} />
               <Route path="/projects/new" element={<ProjectForm />} />
               <Route path="/projects/:id" element={<ProjectEditWrapper />} />
-
-              {/* Team Members Feature Routes
-              <Route
-                path="/team-members"
-                element={<h2>Team Members List Page (to be built)</h2>}
-              />
-              <Route path="/team-members/:id" element={<TeamMemberDetail />} /> */}
-
-              {/* User Feature Routes (Profile uses DashboardLayout but renders only Outlet) */}
-              <Route path="/profile" element={<UserProfilePage />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-
-              {/* Admin Only Routes (Nested Protection) */}
-              <Route element={<PrivateRoutes isAdminRequired={false} />}>
-                <Route
-                  path="/manage-accounts"
-                  element={<UserManagementDashboard />}
-                />
-              </Route>
             </Route>
+
+            {/* Admin-only */}
+            <Route element={<PrivateRoutes adminOnly={true} />}>
+              <Route path="/manage-accounts" element={<UserManagementDashboard />} />
+            </Route>
+
+            {/* Shared */}
+            <Route path="/profile" element={<UserProfilePage />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Route>
 
-          {/* 3. Catch All (404) */}
           <Route path="*" element={<h1>404: Page Not Found</h1>} />
         </Routes>
+
       </Router>
     </AuthContext.Provider>
   );

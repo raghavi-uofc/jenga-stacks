@@ -36,7 +36,8 @@ const UserManagementDashboard = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(users.length / PAGE_SIZE);
+  // NEW: Search term
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -55,18 +56,29 @@ const UserManagementDashboard = () => {
     fetchUsers();
   }, []);
 
- const handleDeleteUser = async (userId) => {
-  if (!window.confirm("Are you sure you want to delete this user?")) return;
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
 
-  try {
-    await deleteUserById(userId);
-    setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-  } catch (error) {
-    alert("Failed to delete user. Please try again.");
-  }
-};
+    try {
+      await deleteUserById(userId);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+    } catch (error) {
+      alert("Failed to delete user. Please try again.");
+    }
+  };
 
-  const pagedUsers = users.slice(
+  // NEW: Filter before pagination
+  const filteredUsers = users.filter((u) => {
+    const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
+    return (
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.includes(searchTerm.toLowerCase())
+    );
+  });
+
+  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
+
+  const pagedUsers = filteredUsers.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
@@ -85,6 +97,26 @@ const UserManagementDashboard = () => {
       <div className="main-content-area">
         <main className="user-table-container">
           <h2>User Management</h2>
+
+          {/* NEW: Search bar */}
+          <input
+            type="text"
+            className="user-search-input"
+            placeholder="Search by name or email..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1); // Reset to page 1 on new search
+            }}
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginBottom: "15px",
+              border: "1px solid #ccc",
+              borderRadius: "6px"
+            }}
+          />
+
           <table className="user-table">
             <thead>
               <tr>
@@ -113,6 +145,7 @@ const UserManagementDashboard = () => {
               )}
             </tbody>
           </table>
+
           <div className="pagination-controls">
             <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>
               Previous
