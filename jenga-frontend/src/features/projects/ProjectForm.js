@@ -44,8 +44,8 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
         requirement_description: initialData.requirement_description || '',
         budget_floor: initialData.budget_floor || '',
         budget_ceiling: initialData.budget_ceiling || '',
-        start_date: initialData.start_date || '',
-        end_date: initialData.end_date || '',
+        start_date: initialData.start_date ? formatDate(new Date(initialData.start_date)) : '',
+        end_date: initialData.end_date ? formatDate(new Date(initialData.end_date)) : '',
         team_members:
           initialData.team_members && initialData.team_members.length > 0
             ? initialData.team_members
@@ -98,7 +98,6 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
     setLoading(true);
     setStatus("draft");
 
-    // Build the payload exactly like before
     const draftPayload = {
       id: projectId,
       name: formData.name,

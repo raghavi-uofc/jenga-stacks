@@ -418,9 +418,6 @@ def list_projects_by_user(user_id):
 def delete_project(project_id):
     user, error_response, status_code = authenticate_token()
     
-    print("Authenticated user:", user)
-    print("Project ID:", project_id)
-    
     if error_response:
         return error_response, status_code
 
@@ -469,34 +466,32 @@ def get_project_details(project_id):
         'status': first_row['status'],
         'budget_floor': first_row['budget_floor'],
         'budget_ceiling': first_row['budget_ceiling'],
-        'timeframe': {
-            'start_date': first_row['project_start_date'],
-            'end_date': first_row['project_end_date']
-        },
+        'start_date': first_row['project_start_date'],
+        'end_date': first_row['project_end_date'],
         'team_members': []
     }
 
     # Aggregate members and their skills
-    members_dict = {}  # key: member full name
-
+    members_dict = {}  # key: member name
     for row in detailed_rows:
-        if row['member_first_name'] and row['member_last_name']:
-            full_name = f"{row['member_first_name']} {row['member_last_name']}"
-            if full_name not in members_dict:
-                members_dict[full_name] = {
-                    'member': full_name,
-                    'language': None,
-                    'framework': None
-                }
+        member_name = row.get('member')
+        if not member_name:
+            continue
 
-            # Assign skill if present
-            skill = row.get('skill')
-            category = row.get('category')
-            if skill and category:
-                if category == 'Language':
-                    members_dict[full_name]['language'] = skill
-                elif category == 'Framework':
-                    members_dict[full_name]['framework'] = skill
+        if member_name not in members_dict:
+            members_dict[member_name] = {
+                'member': member_name,
+                'language': None,
+                'framework': None
+            }
+
+        skill = row.get('skill')
+        category = row.get('category')
+        if skill and category:
+            if category == 'Language':
+                members_dict[member_name]['language'] = skill
+            elif category == 'Framework':
+                members_dict[member_name]['framework'] = skill
 
     # Convert dict to list
     project_details['team_members'] = list(members_dict.values())
