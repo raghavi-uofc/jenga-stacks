@@ -8,8 +8,8 @@ const ProjectCard = ({ project, onDelete }) => {
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
-  const statusKey = project.project_status
-    ? project.project_status.toLowerCase()
+  const statusKey = project.status
+    ? project.status.toLowerCase()
     : "draft";
   const statusClass =
     statusKey === "draft" ? "status-draft" : "status-submitted";
@@ -89,7 +89,7 @@ const ProjectCard = ({ project, onDelete }) => {
 
       <div className="card-footer">
         <div className={`project-status ${statusClass}`}>
-          {project.project_status || "Draft"}
+          {project.status || "Draft"}
         </div>
 
         {project.goalDescription && (

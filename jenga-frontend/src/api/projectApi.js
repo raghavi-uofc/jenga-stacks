@@ -14,7 +14,7 @@ export const submitProject = async (projectData) => {
     });
 
     const data = await response.json();
-    
+
     console.log("Raw response:", response);
 
     if (!response.ok) {
@@ -92,6 +92,34 @@ export const getProjectDetailsById = async (projectId) => {
       `API Fetch Project Details Error for ID ${projectId}:`,
       error
     );
+    throw error;
+  }
+};
+
+
+// Get all projects for a specific user by user ID
+export const getProjectsByUserId = async (userId) => {
+   const token = localStorage.getItem("token");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/user/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch user projects.");
+    }
+
+    const data = await response.json();
+    console.log("Fetched Data:", data);
+
+    return data.projects; // Return the array of projects
+  } catch (error) {
+    console.error("API Fetch Projects Error:", error);
     throw error;
   }
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import ProjectCard from "../../components/projects/ProjectCard";
-import { getProjectsByUserId } from "../../api/authApi";
+import { getProjectsByUserId } from "../../api/projectApi";
 import { AuthContext } from "../../Router";
 import "./ProjectsDashboard.css";
 
