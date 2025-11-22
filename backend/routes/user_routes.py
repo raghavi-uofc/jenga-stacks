@@ -104,7 +104,7 @@ def login():
 
 
 
-# RESET PASSWORD
+# UPDATE PASSWORD
 @user_bp.route('/users/reset_password', methods=['POST'])
 def reset_password():
     # Extract token from Authorization header

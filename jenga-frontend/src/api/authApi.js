@@ -202,6 +202,8 @@ export const deleteUserById = async (userId) => {
     throw error;
   }
 };
+
+// Reset user password
 export const resetPassword = async (old_password, new_password, token) => {
   try {
     const response = await fetch(`${API_BASE_URL}/users/reset_password`, {

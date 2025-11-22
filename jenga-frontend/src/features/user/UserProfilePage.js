@@ -55,11 +55,22 @@ const UserProfilePage = () => {
     const apiBody = { email, first_name, last_name, password };
 
     try {
-      const updatedUser = await updateUserProfile(apiBody);
-      const token = localStorage.getItem("token");
-      login(token, { ...user, ...updatedUser });
-      setMessage("Profile updated successfully!");
-      setFormData((prev) => ({ ...prev, password: "" })); // clear password field
+      const response = await updateUserProfile(apiBody); // call backend
+      if (response?.message === "Profile updated successfully") {
+        const token = localStorage.getItem("token");
+
+        // update frontend state directly with entered names
+        login(token, { 
+          ...user, 
+          first_name: formData.first_name, 
+          last_name: formData.last_name 
+        });
+
+        setMessage(response.message); // show success message
+        setFormData((prev) => ({ ...prev, password: "" })); // clear password
+      } else {
+        setError(response?.error || "Could not save profile changes.");
+      }
     } catch (err) {
       setError(err.message || "Could not save profile changes.");
     } finally {
