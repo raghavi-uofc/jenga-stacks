@@ -1,13 +1,16 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./Layout.css";
 
-const Sidebar = ({ isAdmin, activeLink, onNavigate }) => {
+const Sidebar = ({ isAdmin, activeLink }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="sidebar">
       <nav className="sidebar-nav">
         <span
           className={`sidebar-link ${activeLink === "projects" ? "active" : ""}`}
-          onClick={() => onNavigate("projects")}
+          onClick={() => navigate("/projects")}
         >
           Projects
         </span>
@@ -15,7 +18,7 @@ const Sidebar = ({ isAdmin, activeLink, onNavigate }) => {
           <div className="admin-section">
             <span
               className={`sidebar-link ${activeLink === "manage-accounts" ? "active" : ""}`}
-              onClick={() => onNavigate("manage-accounts")}
+              onClick={() => navigate("/manage-accounts")}
             >
               Manage Accounts
             </span>

@@ -29,6 +29,7 @@
   width: 200px;
   transition: border-color 0.2s;
 }
+
 .search-input:focus {
   border-color: var(--primary-color);
   outline: none;
@@ -37,12 +38,13 @@
 .new-project-button {
   text-decoration: none;
   background-color: var(--primary-color);
-  color: #0056b3;
+  color: #886c21;
   padding: 8px 15px;
   border-radius: 5px;
   font-weight: bold;
   transition: background-color 0.2s;
 }
+
 .new-project-button:hover {
   background-color: #859eb8;
 }
@@ -106,13 +108,14 @@
   color: #e74c3c;
   border-top: 1px solid #eee;
 }
+
 .logout-item:hover {
   background-color: #faeaea;
 }
 
 .sidebar {
   width: var(--sidebar-width);
-  background-color: #34495e;
+  background-color: #a78128;
   color: white;
   padding-top: 0;
   flex-shrink: 0;
@@ -130,17 +133,17 @@
   display: block;
   padding: 10px 20px;
   text-decoration: none;
-  color: #bdc3c7;
+  color: #f2f7fb;
   font-weight: 500;
   font-size: 0.95rem;
 }
 
 .sidebar-link:hover {
-  background-color: #2c3e50;
+  background-color: #886c21;
 }
 
 .sidebar-link.active {
-  background-color: #007bff;
+  background-color: #886c21;
   color: white;
   border-left: 3px solid #f39c12;
   padding-left: 17px;

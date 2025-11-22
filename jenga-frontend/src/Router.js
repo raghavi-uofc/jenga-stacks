@@ -8,6 +8,9 @@ import {
   useLocation,
 } from "react-router-dom";
 
+import Header from "./components/layout/Header";
+import Sidebar from "./components/layout/Sidebar";
+
 import AuthPage from "./features/auth/AuthPage";
 import ProjectsDashboard from "./features/projects/ProjectsDashboard";
 import ProjectForm from "./features/projects/ProjectForm";
@@ -63,14 +66,14 @@ const DashboardLayout = () => {
   const pathSegments = location.pathname.split("/");
   const activeLink = pathSegments[1] || "projects";
 
-  if (activeLink === "profile") {
-    return <Outlet />;
-  }
-
   return (
-    <div>
-      <div>
-        <Outlet />
+    <div className="app-container">
+      <Header />
+      <div className="layout-body">
+        <Sidebar isAdmin={isAdmin} activeLink={activeLink} />
+        <main className="page-content">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

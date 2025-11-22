@@ -1,21 +1,32 @@
+/* Container centers content and fixes width */
 .profile-container {
-  max-width: 600px;
-  margin: 60px auto 40px auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 8px;
+  max-width: 500px;
+  /* fixed width */
+  width: 100%;
+  /* responsive below max width */
+  margin: 0 auto;
+  /* horizontally centered */
+  padding: 30px 25px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
+  border-radius: 8px;
+  background-color: #fff;
+  box-sizing: border-box;
+
+  /* vertically center with viewport */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
+/* Breadcrumb styling */
 .profile-breadcrumb {
-  margin-top: -35px;
-  margin-left: -500px;
-  align-self: flex-start;
   font-size: 14px;
   color: #6c757d;
   margin-bottom: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .breadcrumb-link {
@@ -30,7 +41,7 @@
 }
 
 .breadcrumb-separator {
-  margin: 0 8px;
+  margin: 0 4px;
   color: #adb5bd;
 }
 
@@ -39,14 +50,17 @@
   color: #343a40;
 }
 
+/* Title */
 .profile-title {
   font-size: 28px;
   color: #343a40;
   margin-bottom: 30px;
   border-bottom: 2px solid #e9ecef;
   padding-bottom: 15px;
+  text-align: center;
 }
 
+/* Messages */
 .success-message {
   background-color: #d4edda;
   color: #155724;
@@ -54,6 +68,7 @@
   border: 1px solid #c3e6cb;
   border-radius: 4px;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .error-message {
@@ -63,8 +78,10 @@
   border: 1px solid #f5c6cb;
   border-radius: 4px;
   margin-bottom: 20px;
+  text-align: center;
 }
 
+/* Form styling */
 .profile-form {
   display: flex;
   flex-direction: column;
@@ -91,11 +108,8 @@
   cursor: not-allowed;
 }
 
+/* Secondary action link */
 .secondary-action-link {
-  background: none;
-  border: none;
-  padding: 0;
-  margin: 0;
   font-size: 16px;
   color: #007bff;
   text-decoration: underline;
@@ -118,13 +132,14 @@
   text-decoration: none;
 }
 
+/* Save button */
 .save-button-area {
   margin-top: 20px;
-  text-align: right;
+  text-align: center;
 }
 
 .save-button {
-  background-color: #28a745;
+  background-color: #a78128;
   color: white;
   padding: 12px 25px;
   border: none;
@@ -137,7 +152,7 @@
 }
 
 .save-button:hover:not(:disabled) {
-  background-color: #218838;
+  background-color: #886c21;
 }
 
 .save-button:disabled,

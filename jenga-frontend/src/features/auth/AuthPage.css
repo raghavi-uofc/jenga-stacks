@@ -13,7 +13,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 300px;
     text-align: center;
-    margin: 15px; 
+    margin: 15px;
 }
 
 .auth-form h2 {
@@ -42,13 +42,13 @@
 }
 
 .primary-button {
-    background-color: #007bff; 
+    background-color: #a78128;
     color: white;
     margin-bottom: 10px;
 }
 
 .secondary-button {
-    background-color: #f8f9fa; 
+    background-color: #f8f9fa;
     color: #333;
     border: 1px solid #ccc;
 }
