@@ -35,7 +35,9 @@ cd backend
 py -3 -m venv .venv
 ```
 ### 2. Activate virtual environment:
+```
 .\.venv\Scripts\activate
+```
 ### 3. Install requirements:
 
 ```bash
