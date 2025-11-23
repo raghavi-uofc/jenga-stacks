@@ -11,11 +11,18 @@ const AuthPage = () => {
 
   return (
     <div className="auth-container">
-      {isLogin ? (
-        <LoginForm switchToRegister={switchToRegister} />
-      ) : (
-        <RegisterForm switchToLogin={switchToLogin} />
-      )}
+      <div className="bg"></div>
+      <div className="bg2"></div>
+      <div className="bg3"></div>
+
+      <div className='auth-content'>
+        <h1 className="auth-title">Jenga Stacks</h1>
+        {isLogin ? (
+          <LoginForm switchToRegister={switchToRegister} />
+        ) : (
+          <RegisterForm switchToLogin={switchToLogin} />
+        )}
+      </div>
     </div>
   );
 };

@@ -1,20 +1,104 @@
+/* Reset full height */
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+/* Animated background layers
+Source: https://codepen.io/chris22smith/pen/RZogMa
+
+*/
+.bg,
+.bg2,
+.bg3 {
+    position: fixed;
+    top: -50%;
+    left: 0;
+    right: 0;
+    bottom: -50%;
+    z-index: -1;
+    opacity: 0.5;
+    background-image: linear-gradient(-0deg, var(--primary-color-mid) 50%, var(--primary-color-light) 50%);
+    animation: slide 3s ease-in-out infinite alternate;
+}
+
+.bg2 {
+    animation-direction: alternate-reverse;
+    animation-duration: 4s;
+}
+
+.bg3 {
+    animation-duration: 5s;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateY(-25%);
+    }
+
+    100% {
+        transform: translateY(25%);
+    }
+}
+
+
+/* Floating content card */
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f4f7f9;
+    position: relative;
 }
 
+/* Floating content wrapper */
+.auth-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    /* above background */
+    transform: translateY(-10%);
+}
+
+/* Title above the form */
+.auth-title {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+    font-size: 2.5rem;
+}
+
+/* Form styling */
 .auth-form {
-    background: white;
-    padding: 30px 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 40px 35px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     width: 300px;
     text-align: center;
-    margin: 15px;
+    margin-top: 10px;
+    /* small gap between title and form */
 }
+
+
+/* Responsive */
+@media (max-width: 500px) {
+    .auth-form {
+        width: 90%;
+        padding: 25px 20px;
+    }
+
+    .auth-form h2 {
+        font-size: 1.5em;
+    }
+}
+
+
+
+/* Styling for form elements */
 
 .auth-form h2 {
     margin-bottom: 25px;

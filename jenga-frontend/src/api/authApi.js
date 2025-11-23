@@ -14,7 +14,7 @@ export const loginUser = async (email, password) => {
     if (!response.ok) {
       // Throw an error if the HTTP status is not 2xx
       const errorData = await response.json();
-      throw new Error(errorData.message || "Login failed due to server error.");
+      throw new Error(errorData.error || "Login failed due to server error.");
     }
 
     const data = await response.json();
