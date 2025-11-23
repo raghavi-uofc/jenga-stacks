@@ -48,8 +48,11 @@ python3 -m venv .venv
 sudo apt update && sudo apt install pkg-config
 pip install -r requirements.txt
 ```
-
-### 4. Start the backend server
+### 4. load_dotenv comes from python-dotenv
+```bash
+pip install python-dotenv
+```
+### 5. Start the backend server
 
 With AWS database connection (development mode):
 ```bash
