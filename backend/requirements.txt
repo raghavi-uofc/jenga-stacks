@@ -7,3 +7,5 @@ itsdangerous
 flask-cors
 flask-restx
 google-genai
+pytest
+pytest-mock

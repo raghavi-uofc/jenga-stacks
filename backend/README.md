@@ -31,3 +31,12 @@ Start server with local databsse connection :
 ```bash
 python3 app.py
 ```
+
+## Backend unit tests
+Run the pytest suite from within the virtual environment:
+1. Run tests
+```bash
+cd backend
+source .venv/bin/activate
+python -m pytest
+```
