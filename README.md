@@ -98,7 +98,7 @@ SOURCE sql/DDL/CREATE/010_CREATE_TABLE_GenerationHistory.sql;
 SOURCE sql/DDL/CREATE/011_CREATE_TABLE_GenerationFeedback.sql;
 ```
 **iv) Create Stored Procedures**<br/>
-Stored Procedures for Prompts & Generation History:
+<Stored Procedures for Prompts & Generation History>
 ```
 USE jengadb;
 SOURCE sql/DDL/CREATE/100_CREATE_PROCS_Prompt_GenerationHistory.sql;
@@ -106,12 +106,12 @@ SOURCE sql/DDL/CREATE/100_CREATE_PROCS_Prompt_GenerationHistory.sql;
 This Defines Procedures Such as: sp_add_prompt **|** sp_add_generation_history **|** sp_get_generation_history_by_project
 **v) Seed Sample Data (Optional)** <br/>
 :To Pre-populate the DB with Sample Users, Projects & Related Entities:<br/>
-_Single File:_
+_Single File_
 ```
 USE jengadb;
 SOURCE sql/insert.sql;
 ```
-Or Granular:
+_Or Granular_
 ```
 USE jengadb;
 SOURCE sql/DML/INSERT/001_INSERT_User.sql;
@@ -123,9 +123,9 @@ SOURCE sql/DML/INSERT/006_INSERT_TeamMember.sql;
 SOURCE sql/DML/INSERT/007_INSERT_Timeframe.sql;
 SOURCE sql/DML/INSERT/008_INSERT_Skillset.sql;
 ```
-**vi) (Optional) Create a Dedicated DB User** <br/>
-If Want a Specific DB User for the App:<br/>
->Example Only-Use Own Username/Password
+**vi) {Optional} Create a Dedicated DB User**<br/>
+If want a Specific DB user for the app:<br/>
+>Example only-use own Username/Password
 ```
 CREATE USER 'jenga_user'@'%' IDENTIFIED BY 'your_strong_password_here';
 GRANT ALL PRIVILEGES ON jengadb.* TO 'jenga_user'@'%';
