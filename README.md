@@ -4,16 +4,16 @@
   
 - A web application designed for developers and project managers to generate structured project plans, powered by Gemini AI.
 ## Folder Structure
-├── backend/                # Flask Backend (API, models, utils, tests)
-├── jenga-frontend/         # React frontend (SPA)
-├── sql/                    # MySQL schema, data, and stored procedures
-│   ├── DDL/                # CREATE / DROP scripts
-│   ├── DML/                # INSERT / TRUNCATE scripts
-│   ├── DQL/                # SELECT queries for debugging
-│   ├── init.sql            # Example DB + user initialization
-│   ├── tables.sql          # Combined schema for all tables
-│   └── insert.sql          # Combined sample data insert
-├── designDocuments/        # ER & UML diagrams (reference)
+├── backend/                # Flask Backend (API, models, utils, tests)<br/>
+├── jenga-frontend/         # React frontend (SPA)<br/>
+├── sql/                    # MySQL schema, data, and stored procedures<br/>
+│   ├── DDL/                # CREATE / DROP scripts<br/>
+│   ├── DML/                # INSERT / TRUNCATE scripts<br/>
+│   ├── DQL/                # SELECT queries for debugging<br/>
+│   ├── init.sql            # Example DB + user initialization<br/>
+│   ├── tables.sql          # Combined schema for all tables<br/>
+│   └── insert.sql          # Combined sample data insert<br/>
+├── designDocuments/        # ER & UML diagrams (reference)<br/>
 └── README.md               # Project Documentation
 ## Frontend 
 
