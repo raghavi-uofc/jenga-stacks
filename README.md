@@ -62,13 +62,13 @@ python3 app.py
 ---
 
 ## DATABASE 
-MySQL: Set up the database using either the combined scripts or the modular DDL scripts.<br/>
-i) Start MySQL Workbench
-Ensure MySQL server is running and that know: Host (e.g., `localhost`), Port (default: `3306`), A user with `CREATE DATABASE` and `ALL` privileges on the new DB.
-ii) Create Database
-Option A - using the helper script:
+MySQL: Set Up The Database Using Either The Combined Scripts Or The Modular DDL Scripts<br/>
+i) Start MySQL Workbench<br/>
+Ensure MySQL server is running as well as that know: Host (e.g., `localhost`), Port (default: `3306`), A user with `CREATE DATABASE` and `ALL` privileges on the new DB.<br/>
+ii) Create Database<br/>
+Option A-Using the Helper Script:<br/>
 -- In MySQL Workbench / CLI:
 SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;
-Option B - manual:
+Option B-Manual:
 CREATE DATABASE jengadb;
 
