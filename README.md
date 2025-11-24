@@ -97,3 +97,10 @@ SOURCE sql/DDL/CREATE/009_CREATE_TABLE_Prompts.sql;
 SOURCE sql/DDL/CREATE/010_CREATE_TABLE_GenerationHistory.sql;
 SOURCE sql/DDL/CREATE/011_CREATE_TABLE_GenerationFeedback.sql;
 ```
+**iv) Create Stored Procedures**<br/>
+Stored Procedures for Prompts & Generation History:
+```
+USE jengadb;
+SOURCE sql/DDL/CREATE/100_CREATE_PROCS_Prompt_GenerationHistory.sql;
+```
+This Defines Procedures Such as: sp_add_prompt | sp_add_generation_history | sp_get_generation_history_by_project
