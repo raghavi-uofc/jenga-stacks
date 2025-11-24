@@ -104,3 +104,31 @@ USE jengadb;
 SOURCE sql/DDL/CREATE/100_CREATE_PROCS_Prompt_GenerationHistory.sql;
 ```
 This Defines Procedures Such as: sp_add_prompt **|** sp_add_generation_history **|** sp_get_generation_history_by_project
+**v) Seed Sample Data (Optional)** <br/>
+:To Pre-populate the DB with Sample Users, Projects & Related Entities:<br/>
+_Single File:_
+```
+USE jengadb;
+SOURCE sql/insert.sql;
+```
+Or Granular:
+```
+USE jengadb;
+SOURCE sql/DML/INSERT/001_INSERT_User.sql;
+SOURCE sql/DML/INSERT/002_INSERT_Project.sql;
+SOURCE sql/DML/INSERT/003_INSERT_Member.sql;
+SOURCE sql/DML/INSERT/004_INSERT_Team.sql;
+SOURCE sql/DML/INSERT/005_INSERT_Budget.sql;
+SOURCE sql/DML/INSERT/006_INSERT_TeamMember.sql;
+SOURCE sql/DML/INSERT/007_INSERT_Timeframe.sql;
+SOURCE sql/DML/INSERT/008_INSERT_Skillset.sql;
+```
+**vi) (Optional) Create a Dedicated DB User** <br/>
+If Want a Specific DB User for the App:<br/>
+>Example Only-Use Own Username/Password
+```
+CREATE USER 'jenga_user'@'%' IDENTIFIED BY 'your_strong_password_here';
+GRANT ALL PRIVILEGES ON jengadb.* TO 'jenga_user'@'%';
+FLUSH PRIVILEGES;
+```
+Reference this user in the Backend Environment Variables
