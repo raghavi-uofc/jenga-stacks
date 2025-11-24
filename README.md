@@ -81,7 +81,7 @@ _Quick Option (Single Script):_
 USE jengadb;
 SOURCE sql/tables.sql;
 ```
-This creates the core tables: User, Project, Team, Member, TeamMember, Skillset, Budget, Timeframe, Prompt, GenerationHistory<br/>
+This Creates the Core Tables: User, Project, Team, Member, TeamMember, Skillset, Budget, Timeframe, Prompt, GenerationHistory<br/>
 _Modular option (1 File Per Table):_
 ```
 USE jengadb;
