@@ -103,9 +103,9 @@ SOURCE sql/DDL/CREATE/011_CREATE_TABLE_GenerationFeedback.sql;
 USE jengadb;
 SOURCE sql/DDL/CREATE/100_CREATE_PROCS_Prompt_GenerationHistory.sql;
 ```
-This Defines Procedures Such as: sp_add_prompt **|** sp_add_generation_history **|** sp_get_generation_history_by_project
-**v) Seed Sample Data (Optional)** <br/>
-:To Pre-populate the DB with Sample Users, Projects & Related Entities:<br/>
+This Defines Procedures Such as: sp_add_prompt **|** sp_add_generation_history **|** sp_get_generation_history_by_project<br/>
+**v) Seed Sample Data {Optional}** <br/>
+|To Pre-populate the DB with Sample Users, Projects & Related Entities|<br/>
 _Single File_
 ```
 USE jengadb;
