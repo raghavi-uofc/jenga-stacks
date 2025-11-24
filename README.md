@@ -68,7 +68,7 @@ Ensure MySQL server is running as well as that know: Host (e.g., `localhost`), P
 ii) Create Database<br/>
 Option A-Using the Helper Script:<br/>
 ```
-=> In MySQL Workbench / CLI <=
+:In MySQL Workbench/CLI:
 SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;
 ```
 Option B-Manual:<br/>
