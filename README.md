@@ -4,7 +4,7 @@
   
 - A web application designed for developers and project managers to generate structured project plans, powered by Gemini AI.
 
-## Frontend 
+# Frontend 
 
 ### 1. Navigate to the frontend directory:
 ``` bash
@@ -23,7 +23,7 @@ npm run start
 
 ---
 
-## Backend
+# Backend
 
 ### 1. Navigate to the backend directory
 ``` bash
