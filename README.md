@@ -103,4 +103,4 @@ Stored Procedures for Prompts & Generation History:
 USE jengadb;
 SOURCE sql/DDL/CREATE/100_CREATE_PROCS_Prompt_GenerationHistory.sql;
 ```
-This Defines Procedures Such as: sp_add_prompt | sp_add_generation_history | sp_get_generation_history_by_project
+This Defines Procedures Such as: sp_add_prompt **|** sp_add_generation_history **|** sp_get_generation_history_by_project
