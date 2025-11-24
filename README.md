@@ -75,3 +75,9 @@ _Option B-Manual:_
 ```
 CREATE DATABASE jengadb;
 ```
+**iii) Create Schema (Tables)**<br/>
+_Quick Option (Single Script):_
+```
+USE jengadb;
+SOURCE sql/tables.sql;
+```
