@@ -71,7 +71,7 @@ Option A-Using the Helper Script:<br/>
 :In MySQL Workbench/CLI:
 SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;
 ```
-Option B-Manual:<br/>
+Option B-Manual:
 ```
-CREATE DATABASE jengadb;<br/>
+CREATE DATABASE jengadb;
 ```
