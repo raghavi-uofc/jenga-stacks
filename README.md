@@ -4,9 +4,7 @@
   
 - A web application designed for developers and project managers to generate structured project plans, powered by Gemini AI.
 ## Folder Structure
-
-```text
-.
+```
 ├── backend/                # Flask backend (API, models, utils, tests)
 ├── jenga-frontend/         # React frontend (SPA)
 ├── sql/                    # MySQL schema, data, and stored procedures
@@ -18,7 +16,7 @@
 │   └── insert.sql          # Combined sample data insert
 ├── designDocuments/        # ER & UML diagrams (reference)
 └── README.md               # Project documentation
-
+```
 ## Frontend 
 
 ### 1. Navigate to the frontend directory:
