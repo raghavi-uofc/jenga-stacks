@@ -67,8 +67,8 @@ i) Start MySQL Workbench<br/>
 Ensure MySQL server is running as well as that know: Host (e.g., `localhost`), Port (default: `3306`), A user with `CREATE DATABASE` and `ALL` privileges on the new DB.<br/>
 ii) Create Database<br/>
 Option A-Using the Helper Script:<br/>
--- In MySQL Workbench / CLI:
-SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;
-Option B-Manual:
-CREATE DATABASE jengadb;
+=> In MySQL Workbench / CLI:<br/>
+SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;<br/>
+Option B-Manual:<br/>
+CREATE DATABASE jengadb;<br/>
 
