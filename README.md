@@ -30,7 +30,7 @@ npm run start
 cd backend
 ```
 
-### 2. Create virtual environment: 
+### 2. Create a virtual environment: 
 ```
 py -3 -m venv .venv
 ```
@@ -67,8 +67,10 @@ i) Start MySQL Workbench<br/>
 Ensure MySQL server is running as well as that know: Host (e.g., `localhost`), Port (default: `3306`), A user with `CREATE DATABASE` and `ALL` privileges on the new DB.<br/>
 ii) Create Database<br/>
 Option A-Using the Helper Script:<br/>
-=> In MySQL Workbench / CLI:<br/>
+```
+=> In MySQL Workbench / CLI <=<br/>
 SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;<br/>
+```
 Option B-Manual:<br/>
 CREATE DATABASE jengadb;<br/>
 
