@@ -72,5 +72,6 @@ Option A-Using the Helper Script:<br/>
 SOURCE sql/DDL/CREATE/CREATE_DATABASE_jengadb.sql;
 ```
 Option B-Manual:<br/>
+```
 CREATE DATABASE jengadb;<br/>
-
+```
