@@ -1,5 +1,7 @@
 import utils.auth_utils as auth_utils
 
+# Tests project routes for auth enforcement and required-field validation.
+
 
 def test_save_project_draft_requires_auth(client):
     # No Authorization header should result in 401.

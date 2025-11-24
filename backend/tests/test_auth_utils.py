@@ -1,5 +1,7 @@
 import utils.auth_utils as auth_utils
 
+# Tests token verification success and failure paths with stubbed user lookup.
+
 def test_verify_token_valid(monkeypatch, app):
     # Happy path: token deserializes and active user is returned.
     auth_utils.configure_serializer("secret-key")

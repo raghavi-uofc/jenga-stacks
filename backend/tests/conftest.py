@@ -3,8 +3,8 @@ import sys
 import types
 import pytest
 
-# Test configuration: stub external dependencies (MySQLdb, flasgger) and
-# provide a lightweight Flask app + client for route tests.
+# Pytest scaffold: stubs MySQLdb and flasgger, injects fake mysql into the app,
+# and supplies a Flask test client so route tests can run without real services.
 
 # Ensure project root is on sys.path for imports like `import app` / `import utils.*`
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -28,6 +28,13 @@ class _FakeCursor:
 
     def close(self):
         return None
+
+    # Support context manager usage (e.g., with cursor() as cur)
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return False
 
 
 class _FakeConnection:

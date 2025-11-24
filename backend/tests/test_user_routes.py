@@ -1,5 +1,7 @@
 import app as app_module
 
+# Tests user register/login flows using stubbed DB access, bcrypt, and token generation.
+
 
 def test_register_success(monkeypatch, client):
     # New user: insert_user should be called and endpoint returns 201.
