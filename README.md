@@ -4,7 +4,7 @@
   
 - A web application designed for developers and project managers to generate structured project plans, powered by Gemini AI.
 
-# Frontend 
+## Frontend 
 
 ### 1. Navigate to the frontend directory:
 ``` bash
@@ -23,7 +23,7 @@ npm run start
 
 ---
 
-# Backend
+## Backend
 
 ### 1. Navigate to the backend directory
 ``` bash
@@ -61,7 +61,7 @@ python3 app.py
 
 ---
 
-# DATABASE 
+## DATABASE 
 MySQL: Set Up The Database Using Either The Combined Scripts Or The Modular DDL Scripts<br/><br/>
 **i) Start MySQL Workbench**<br/>
 Ensure MySQL server is running as well as that know: Host (e.g., `localhost`), Port (default: `3306`), A user with `CREATE DATABASE` and `ALL` privileges on the new DB.<br/>
