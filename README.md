@@ -63,6 +63,7 @@ python3 app.py
 
 ## DATABASE 
 MySQL: Set up the database using either the combined scripts or the modular DDL scripts.
+
 i) Start MySQL Workbench
 Ensure MySQL server is running and that know: Host (e.g., `localhost`), Port (default: `3306`), A user with `CREATE DATABASE` and `ALL` privileges on the new DB.
 ii) Create Database
