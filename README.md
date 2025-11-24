@@ -3,7 +3,18 @@
 - Fall 2025, ENSF 607/608 Final Project 
   
 - A web application designed for developers and project managers to generate structured project plans, powered by Gemini AI.
-
+## Folder Structure
+├── backend/                # Flask Backend (API, models, utils, tests)
+├── jenga-frontend/         # React frontend (SPA)
+├── sql/                    # MySQL schema, data, and stored procedures
+│   ├── DDL/                # CREATE / DROP scripts
+│   ├── DML/                # INSERT / TRUNCATE scripts
+│   ├── DQL/                # SELECT queries for debugging
+│   ├── init.sql            # Example DB + user initialization
+│   ├── tables.sql          # Combined schema for all tables
+│   └── insert.sql          # Combined sample data insert
+├── designDocuments/        # ER & UML diagrams (reference)
+└── README.md               # Project Documentation
 ## Frontend 
 
 ### 1. Navigate to the frontend directory:
