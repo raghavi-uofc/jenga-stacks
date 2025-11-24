@@ -81,3 +81,19 @@ _Quick Option (Single Script):_
 USE jengadb;
 SOURCE sql/tables.sql;
 ```
+This creates the core tables: User, Project, Team, Member, TeamMember, Skillset, Budget, Timeframe, Prompt, GenerationHistory<br/>
+_Modular option (1 File Per Table):_
+```
+USE jengadb;
+SOURCE sql/DDL/CREATE/001_CREATE_TABLE_User.sql;
+SOURCE sql/DDL/CREATE/002_CREATE_TABLE_Project.sql;
+SOURCE sql/DDL/CREATE/003_CREATE_TABLE_Team.sql;
+SOURCE sql/DDL/CREATE/004_CREATE_TABLE_Member.sql;
+SOURCE sql/DDL/CREATE/005_CREATE_TABLE_Skillset.sql;
+SOURCE sql/DDL/CREATE/006_CREATE_TABLE_TeamMember.sql;
+SOURCE sql/DDL/CREATE/007_CREATE_TABLE_Budget.sql;
+SOURCE sql/DDL/CREATE/008_CREATE_TABLE_Timeframe.sql;
+SOURCE sql/DDL/CREATE/009_CREATE_TABLE_Prompts.sql;
+SOURCE sql/DDL/CREATE/010_CREATE_TABLE_GenerationHistory.sql;
+SOURCE sql/DDL/CREATE/011_CREATE_TABLE_GenerationFeedback.sql;
+```
