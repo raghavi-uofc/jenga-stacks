@@ -4,11 +4,8 @@ import MySQLdb.cursors
 import sys
 from flask_mysqldb import MySQL
 
-# We attempt to import 'mysql' from the main application module ('app').
-# This relies on the fact that 'app' has already been imported and initialized
-# before the blueprint is registered.
+
 try:
-    # Safely access the globally initialized 'mysql' object from the main application
     from app import mysql
 except ImportError:
     # This should only happen if the import path is fundamentally wrong

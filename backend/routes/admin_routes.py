@@ -5,7 +5,6 @@ from flask import Blueprint, jsonify, g,request
 from app import mysql, auth
 from flasgger import swag_from
 from utils.auth_utils import serializer
-
 from models.user_model import get_users, get_user_by_email
 import logging
 

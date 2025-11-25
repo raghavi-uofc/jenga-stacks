@@ -81,17 +81,13 @@ def create_app():
 
     from routes.user_routes import user_bp
     from routes.project_routes import project_bp
-    from routes.member_routes import member_bp
     from routes.admin_routes import admin_bp
     from routes.health_routes import health_bp
-    from routes.gemini_routes import gemini_bp
 
     app.register_blueprint(user_bp, url_prefix='/api')
     app.register_blueprint(project_bp, url_prefix='/api')
-    app.register_blueprint(member_bp, url_prefix='/api')
     app.register_blueprint(admin_bp, url_prefix='/api')
     app.register_blueprint(health_bp, url_prefix='/api')
-    app.register_blueprint(gemini_bp)
 
     return app
 
