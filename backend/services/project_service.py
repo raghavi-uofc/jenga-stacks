@@ -20,7 +20,7 @@ class ProjectService:
 
 
     # ---------------- NAME & GOAL ----------------
-    def _validate_name_and_goal(pd, out):
+    def _validate_name_and_goal(self, pd, out):
         name = pd.project.name if pd.project else None
         goal = pd.project.goal_description if pd.project else None
         if not name:
@@ -34,7 +34,7 @@ class ProjectService:
 
 
     # ---------------- BUDGET ----------------
-    def _validate_budget(pd, out):
+    def _validate_budget(self, pd, out):
         floor = pd.budget.floor if pd.budget else None
         ceiling = pd.budget.ceiling if pd.budget else None
 
@@ -57,7 +57,7 @@ class ProjectService:
 
 
     # ---------------- TIMEFRAME ----------------
-    def _validate_timeframe(pd, out):
+    def _validate_timeframe(self, pd, out):
         start = pd.timeframe.start if pd.timeframe else None
         end = pd.timeframe.end if pd.timeframe else None
 
@@ -87,7 +87,7 @@ class ProjectService:
 
 
     # ---------------- TEAM MEMBERS ----------------
-    def _validate_team_members(pd, out):
+    def _validate_team_members(self, pd, out):
         team = pd.team_members or []
 
         if not isinstance(team, list):
@@ -121,27 +121,30 @@ class ProjectService:
 
         return ProjectDetailed(
             project=Project(
-                name=data['name'],
-                requirement_description=data.get('requirement_description'),
-                goal_description=data['goal_description'],
-                status='draft',
+                id=data.get("id"),
+                name=data.get("name"),
+                requirement_description=data.get("requirement_description"),
+                goal_description=data.get("goal_description"),
+                status=data.get("project_status"),
                 user_id=user_id,
             ),
             budget=Budget(
-                floor=data.get('budget_floor'),
-                ceiling=data.get('budget_ceiling'),
+                floor=data.get("budget_floor"),
+                ceiling=data.get("budget_ceiling"),
             ),
             timeframe=Timeframe(
-                start=data['start_date'],
-                end=data['end_date'],
+                start=data.get("start_date"),
+                end=data.get("end_date"),
             ),
-            team_members=team_members
+            team_members=team_members or []
         )
+
     
     def save_draft(self, data: dict, user_id: int) -> int:
         # Validate required fields
-        self._validate_req_fields(self, data)
+        self._validate_req_fields(data)
         project = self.build_project_detailed(data, user_id)
+        
         self.validate_project(project)
 
         # Save project to DB
@@ -151,7 +154,7 @@ class ProjectService:
     
     def submit_project(self, data: dict, user_id: int) -> int:
         # Validate required fields
-        self._validate_req_fields(self, data)
+        self._validate_req_fields(data)
         project = self.build_project_detailed(data, user_id)
         self.validate_project(project)
         
@@ -169,17 +172,18 @@ class ProjectService:
         return project_id, prompt_id, llm_response_text
     
     def get_projects_by_user(self, user_id):
-        return self.project_repo.get_projects_by_user(user_id).to_dict()
+        return self.project_repo.get_projects_by_user(user_id)
     
     def delete_project(self, project_id: int, user_id: int) -> None:
         project = self.project_repo.get_project_by_id(project_id)
         if not project:
             raise FileNotFoundError("Project not found")
         if project.user_id != user_id:
+            print("Project user_id: ", project.user_id, "User ID:", user_id, "\n")
             raise PermissionError("You do not have permission to delete this project")
         
         # Delete the project (cascades to budget, timeframe, team, etc.)
-        self.project_repo.delete_project(project_id)
+        self.project_repo.delete_project(project_id, user_id)
     
 
     def get_project_details(self, project_id, user_id):
@@ -191,9 +195,11 @@ class ProjectService:
                # Convert first row to dict for ProjectDetailed
         first_row = detailed_rows[0]
         project_dict = {
+            'id': first_row['project_id'],
             'name': first_row['name'],
             'requirement_description': first_row.get('requirementDescription'),
             'goal_description': first_row.get('goalDescription'),
+            'project_status': first_row.get('status'),
             'budget_floor': first_row.get('budget_floor'),
             'budget_ceiling': first_row.get('budget_ceiling'),
             'start_date': first_row.get('project_start_date'),
@@ -221,10 +227,11 @@ class ProjectService:
         project_dict['team_members'] = list(members_dict.values())
 
         # Build ProjectDetailed object
-        project_detailed = self.project_repo.build_project_detailed(project_dict, user_id)
+        project_detailed = self.build_project_detailed(project_dict, user_id)
 
         # Attach LLM response if project is submitted
         if project_detailed.project.status == 'submitted':
+            print('getting llm response')
             project_detailed.llm_response = self.project_repo.get_latest_generation_response(project_id)
 
         return project_detailed

@@ -20,7 +20,7 @@ def save_project_draft():
 
     try:
         project_service = current_app.project_service  # assume you attach it at app init
-        project_id = project_service.save_draft(data, user['id'])
+        project_id = project_service.save_draft(data, user.id)
         return jsonify({'message': 'Project saved as draft', 'project_id': project_id}), 200
     except ValueError as ve:
         return jsonify({'error': str(ve)}), 400
@@ -39,7 +39,7 @@ def submit_project():
 
     try:
         project_service = current_app.project_service
-        project_id, prompt_id, llm_text = project_service.submit(user['id'], data)
+        project_id, prompt_id, llm_text = project_service.submit_project(data, user.id)
 
         return jsonify({
             'message': 'Project submitted successfully',
@@ -51,6 +51,7 @@ def submit_project():
     except ValueError as e:
         return jsonify({'error': str(e)}), 400
     except Exception as e:
+        print("500: ", e, '\n')
         return jsonify({'error': str(e)}), 500
 
 
@@ -60,14 +61,15 @@ def list_projects_by_user(user_id):
     user, error_response, status_code = authenticate_token(current_app.user_repo)
     if error_response:
         return error_response, status_code
-    if user['id'] != user_id:
+    if user.id != user_id:
         return jsonify({'error': 'Forbidden'}), 403
 
     project_service = current_app.project_service
     projects = project_service.get_projects_by_user(user_id)
-    return jsonify({'projects': projects}), 200
-
-
+    # project is a list of Project , need to dict every one of them 
+    # Convert each Project object into a dict
+    project_dicts = [project.to_dict() for project in projects]
+    return jsonify({'projects': project_dicts}), 200
 
 # Delete project endpoint
 @project_bp.route('/projects/<int:project_id>', methods=['DELETE'])
@@ -78,13 +80,14 @@ def delete_project(project_id):
 
     project_service = current_app.project_service
     try:
-        project_service.delete_project(project_id, user['id'])
+        project_service.delete_project(project_id, user.id)
         return jsonify({'message': 'Project deleted'}), 200
     except PermissionError as e:
         return jsonify({'error': str(e)}), 403
     except FileNotFoundError as e:
         return jsonify({'error': str(e)}), 404
     except Exception as e:
+        print("500: ", e)
         return jsonify({'error': str(e)}), 500
 
 
@@ -105,7 +108,7 @@ def get_project_details(project_id):
         return error_response, status_code
 
     project_service = current_app.project_service
-    project = project_service.get_project_details(project_id, user['id'])
+    project = project_service.get_project_details(project_id, user.id)
     if not project:
         return jsonify({'message': 'Project not found'}), 404
 

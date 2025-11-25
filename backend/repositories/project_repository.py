@@ -1,6 +1,6 @@
-from backend.models.project_detailed import Budget, Timeframe, ProjectDetailed
-from backend.models.member import Member
-from backend.models.project import Project
+from models.project_detailed import Budget, Timeframe, ProjectDetailed
+from models.member import Member
+from models.project import Project
 
 class ProjectRepository:
     def __init__(self, mysql):
@@ -230,7 +230,7 @@ class ProjectRepository:
     ### Timeframe operations
     #####################################################
     def save_timeframe(self, project_id, time: Timeframe):
-        if time.start_time is None and time.end_time is None:
+        if time.start is None and time.end is None:
             return
         # never save incomplete timeframe
 

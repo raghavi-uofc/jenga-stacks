@@ -1,8 +1,7 @@
 # models/project.py
-from datetime import datetime
 from typing import List, Optional
-from member import Member
-from project import Project
+from models.member import Member
+from models.project import Project
 
 class Budget:
     def __init__(self, project_id=None, floor=None, ceiling=None):
