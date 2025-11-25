@@ -155,7 +155,8 @@
   border-left: 3px solid #f39c12;
   padding-left: 17px;
 }
-.register-button {
+
+.register-admin-button {
   text-decoration: none;
   background-color: var(--primary-color);
   color: white;
@@ -167,6 +168,6 @@
   cursor: pointer;
 }
 
-.register-button:hover {
+.register-admin-button:hover {
   background-color: var(--primary-color-hover);
 }

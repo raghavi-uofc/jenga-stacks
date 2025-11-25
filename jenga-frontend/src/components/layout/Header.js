@@ -22,11 +22,6 @@ const Header = () => {
     navigate("/auth");
   };
 
-  const handleRegisterClick = () => {
-    setShowRegister(true);
-    setIsMenuOpen(false);
-  };
-
   const switchToLogin = () => {
     setShowRegister(false);
   };
@@ -49,8 +44,8 @@ const Header = () => {
           </Link>
         )}
         {user?.role === "admin" && (
-          <Link to="/register" className="register-button">
-            Register
+          <Link to="/register-admin" className="register-admin-button">
+            Register New User
           </Link>
         )}
 

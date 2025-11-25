@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import UserManagementDashboard from "./UserManagementDashboard";
+
 // Mock API functions
 jest.mock("../../api/authApi", () => ({
   getAllUsers: jest.fn(),
@@ -7,6 +8,7 @@ jest.mock("../../api/authApi", () => ({
 }));
 
 import { getAllUsers, deleteUserById } from "../../api/authApi";
+
 
 // Mock window.confirm
 beforeEach(() => {

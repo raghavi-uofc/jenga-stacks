@@ -67,7 +67,7 @@ const RegisterForm = ({ switchToLogin, isCurrentUserAdmin }) => {
     <div className="auth-container">
       <div className="auth-content">
         <div className="auth-form register-form">
-          <h2>Register</h2>
+          <h2>{isCurrentUserAdmin ? "Register New User" : "Register"}</h2>
           {success && (
             <p style={{ color: "green", fontWeight: "bold" }}>{success}</p>
           )}
@@ -149,13 +149,16 @@ const RegisterForm = ({ switchToLogin, isCurrentUserAdmin }) => {
             </button>
           </form>
 
-          <button
-            className="auth-button tertiary-button"
-            onClick={switchToLogin}
-            disabled={loading}
-          >
-            Go to Login
-          </button>
+          {!isCurrentUserAdmin && (
+            <button
+              className="auth-button tertiary-button"
+              onClick={switchToLogin}
+              disabled={loading}
+            >
+              Go to Login
+            </button>
+          )}
+
         </div>
       </div>
     </div>

@@ -101,6 +101,7 @@ const AppRouter = () => {
             {/* Admin-only */}
             <Route element={<PrivateRoutes adminOnly={true} />}>
               <Route path="/manage-accounts" element={<UserManagementDashboard />} />
+              <Route path="/register-admin" element={<RegisterForm isCurrentUserAdmin={true} />}/>
             </Route>
 
             {/* Shared */}
