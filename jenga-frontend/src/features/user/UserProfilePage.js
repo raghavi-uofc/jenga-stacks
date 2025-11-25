@@ -10,8 +10,8 @@ const UserProfilePage = () => {
   // Initialize formData with safe defaults
   const [formData, setFormData] = useState({
     email: user?.email || "",
-    first_name: user?.first_name || "",
-    last_name: user?.last_name || "",
+    first_name: user?.first_name || user?.firstName|| "",
+    last_name: user?.last_name || user?.lastName || "",
     password: "", // for security verification
   });
 
