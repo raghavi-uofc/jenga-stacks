@@ -171,7 +171,18 @@ class ProjectService:
     def get_projects_by_user(self, user_id):
         return self.project_repo.get_projects_by_user(user_id).to_dict()
     
-    def delete_project(self, project_id, user_id):
+    def delete_project(self, project_id: int, user_id: int) -> None:
+        project = self.project_repo.get_project_by_id(project_id)
+        if not project:
+            raise FileNotFoundError("Project not found")
+        if project.user_id != user_id:
+            raise PermissionError("You do not have permission to delete this project")
+        
+        # Delete the project (cascades to budget, timeframe, team, etc.)
+        self.project_repo.delete_project(project_id)
+    
+
+    def get_project_details(self, project_id, user_id):
         # Fetch raw rows from DB
         detailed_rows = self.project_repo.get_project_details_rows(project_id, user_id)
         if not detailed_rows:
@@ -216,4 +227,4 @@ class ProjectService:
         if project_detailed.project.status == 'submitted':
             project_detailed.llm_response = self.project_repo.get_latest_generation_response(project_id)
 
-        return project_detailed.to_dict()
+        return project_detailed

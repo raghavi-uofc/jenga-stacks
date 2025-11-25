@@ -109,4 +109,4 @@ def get_project_details(project_id):
     if not project:
         return jsonify({'message': 'Project not found'}), 404
 
-    return jsonify({'project': project}), 200
+    return jsonify({'project': project.to_dict()}), 200

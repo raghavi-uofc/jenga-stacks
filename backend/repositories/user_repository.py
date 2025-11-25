@@ -27,8 +27,21 @@ class UserRepository:
             """
             cur.execute(sql, (firstName, lastName, email, pw_hash, role))
         self.mysql.connection.commit()
+        
+    def delete_user(self, user_id):
+        with self.mysql.connection.cursor() as cur:
+            cur.execute("DELETE FROM User WHERE id=%s", (user_id,))
+            affected = cur.rowcount
 
-    def get_users(self):
+        if affected > 0:
+            self.mysql.connection.commit()
+            return True
+
+        self.mysql.connection.rollback()
+        return False
+
+
+    def get_all_users(self):
         with self.mysql.connection.cursor() as cur:
             cur.execute("""
                 SELECT id, firstName, lastName, email, role, status, dateTimeCreated
