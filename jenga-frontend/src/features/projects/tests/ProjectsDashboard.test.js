@@ -1,7 +1,8 @@
 jest.mock("react-markdown", () => () => <div />);
+import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import ProjectsDashboard from "../ProjectsDashboard";
-import { AuthContext } from "../../../Router"; 
+import { AuthContext } from "../../../Router";
 
 // Mock getProjectsByUserId API
 jest.mock("../../../api/projectApi", () => ({
@@ -9,11 +10,12 @@ jest.mock("../../../api/projectApi", () => ({
 }));
 import { getProjectsByUserId } from "../../../api/projectApi";
 
-// Mock ProjectCard so we only test dashboard logic
-jest.mock("../../../components/projects/ProjectCard", () => ({ project, onDelete }) => (
+// Mock ProjectCard to focus on dashboard logic
+jest.mock("../../../components/projects/ProjectCard", () => ({ project }) => (
   <div data-testid="project-card">{project.name}</div>
 ));
 
+// Mock user context helper
 const userMock = { id: "u1", first_name: "Jane" };
 function renderWithAuthContext(ui, user = userMock) {
   return render(
@@ -24,7 +26,7 @@ function renderWithAuthContext(ui, user = userMock) {
 }
 
 test("shows loading spinner initially", () => {
-  // Block API with unresolved Promise to stay in loading state
+  // Mock unresolved promise to keep loading state
   getProjectsByUserId.mockReturnValue(new Promise(() => {}));
   renderWithAuthContext(<ProjectsDashboard />);
   expect(screen.getByText(/loading projects/i)).toBeInTheDocument();
@@ -38,14 +40,16 @@ test("shows error if user is missing", () => {
 test("shows error message if API fails", async () => {
   getProjectsByUserId.mockRejectedValueOnce(new Error("API Error"));
   renderWithAuthContext(<ProjectsDashboard />);
-  await waitFor(() => expect(screen.getByText(/could not load your projects/i)).toBeInTheDocument());
+  await waitFor(() =>
+    expect(screen.getByText(/could not load your projects/i)).toBeInTheDocument()
+  );
 });
 
 test("shows empty projects message if none exist", async () => {
   getProjectsByUserId.mockResolvedValueOnce([]);
   renderWithAuthContext(<ProjectsDashboard />);
   await waitFor(() =>
-    expect(screen.getByText(/not created any projects/i)).toBeInTheDocument()
+    expect(screen.getByText(/You have not created any projects yet./i)).toBeInTheDocument()
   );
 });
 

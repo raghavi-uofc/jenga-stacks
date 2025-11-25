@@ -1,10 +1,12 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../../Router";
+import RegisterForm from "../../features/auth/RegisterForm";
 import "./Layout.css";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showRegister, setShowRegister] = useState(false); // state to toggle register form
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -20,7 +22,20 @@ const Header = () => {
     navigate("/auth");
   };
 
-  console.log("Header Render - User:", user);
+  const handleRegisterClick = () => {
+    setShowRegister(true);
+    setIsMenuOpen(false);
+  };
+
+  const switchToLogin = () => {
+    setShowRegister(false);
+  };
+
+  if (showRegister) {
+    return (
+      <RegisterForm switchToLogin={switchToLogin} isCurrentUserAdmin={user?.role === "admin"} />
+    );
+  }
 
   return (
     <header className="main-header">
@@ -28,11 +43,14 @@ const Header = () => {
         <h1>JengaStacks / Dashboard</h1>
       </div>
       <div className="header-actions">
-       
-       
-        {user?.role !== 'admin' && (
+        {user?.role !== "admin" && (
           <Link to="/projects/new" className="new-project-button">
             New Project
+          </Link>
+        )}
+        {user?.role === "admin" && (
+          <Link to="/register" className="register-button">
+            Register
           </Link>
         )}
 
@@ -47,7 +65,10 @@ const Header = () => {
           {isMenuOpen && (
             <div className="profile-dropdown-menu">
               <div className="user-info">
-                <strong> {user?.first_name || ""} {user?.last_name || ""} </strong>
+                <strong>
+                  {" "}
+                  {user?.first_name || ""} {user?.last_name || ""}{" "}
+                </strong>
                 ({user?.email || "Guest"})
               </div>
               <button className="menu-item" onClick={handleProfileClick}>
