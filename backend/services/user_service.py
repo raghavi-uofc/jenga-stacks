@@ -24,6 +24,7 @@ class UserService:
             return None, "Invalid credentials"
 
         token = generate_token(user.to_dict())
+        print(user.to_dict(), '\n', token, '\n')
         return user, token, None
 
     def reset_password(self, email, old_password, new_password):

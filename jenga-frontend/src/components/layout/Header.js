@@ -8,7 +8,7 @@ const Header = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const initials = user ? user.first_name[0].toUpperCase() : "U";
+  const initials = user ? user.firstName[0].toUpperCase() : "U";
 
   const handleProfileClick = () => {
     setIsMenuOpen(false);
@@ -20,7 +20,7 @@ const Header = () => {
     navigate("/auth");
   };
 
-  console.log("Header Render - User:", user);
+  //console.log("Header Render - User:", user);
 
   return (
     <header className="main-header">
