@@ -2,21 +2,20 @@
 # app.py - Main entry point and app factory
 
 from flask import Flask
-from flask_mysqldb import MySQL
 from flask_cors import CORS
-from flask_bcrypt import Bcrypt
-from flask_httpauth import HTTPTokenAuth
-from flasgger import Swagger
-
 from dotenv import load_dotenv
-import argparse
-import os
+import argparse, os
 
-mysql = MySQL()
-bcrypt = Bcrypt()
-auth = HTTPTokenAuth(scheme='Bearer')
-swagger = Swagger()
-import utils.auth_utils as auth_utils
+from utils.auth_utils import configure_serializer, verify_token, generate_token
+from globals import mysql, bcrypt, auth, swagger
+
+# import repositories
+from repositories.user_repository import UserRepository
+from repositories.project_repository import ProjectRepository
+# import services
+from services.user_service import UserService
+from services.project_service import ProjectService
+
 
 def load_environment():
     """
@@ -42,6 +41,8 @@ def load_environment():
     # Fallback: local
     return "local"
 
+
+
 def create_app():
     env = load_environment()
 
@@ -60,13 +61,14 @@ def create_app():
     app.config['MYSQL_DB'] = os.getenv("DB_NAME")
 
     app.config['SECRET_KEY'] =  os.getenv("SECRET_KEY")
-    
     app.config['MYSQL_CURSORCLASS'] = os.getenv("MYSQL_CURSORCLASS")
     app.config['GEMINI_API_KEY'] = os.getenv("GEMINI_API_KEY")
+    
     mysql.init_app(app)
     bcrypt.init_app(app)
     swagger.init_app(app)
-    auth_utils.configure_serializer(app.config['SECRET_KEY'])
+    
+    configure_serializer(app.config['SECRET_KEY'])
     
     CORS(app, resources={
         r"/api/*": {
@@ -77,8 +79,17 @@ def create_app():
         }
     })
 
-    auth.verify_token(verify_auth_token)
+    auth.verify_token(lambda token: verify_token(token, app.user_repo))
 
+    # initialize repositories
+    app.user_repo = UserRepository(mysql)
+    app.project_repo = ProjectRepository(mysql)
+    # initialize services
+    app.user_service = UserService(app.user_repo)
+    app.project_service = ProjectService(app.project_repo)
+
+
+    # register blueprints
     from routes.user_routes import user_bp
     from routes.project_routes import project_bp
     from routes.admin_routes import admin_bp
@@ -91,9 +102,8 @@ def create_app():
 
     return app
 
-#@auth.verify_token
-def verify_auth_token(token):
-    return auth_utils.verify_token(token)
+
+    
 
 if __name__ == '__main__':
     app = create_app()

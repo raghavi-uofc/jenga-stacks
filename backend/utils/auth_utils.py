@@ -3,7 +3,7 @@
 
 from flask import g
 from itsdangerous import URLSafeTimedSerializer
-from models.user_model import get_user_by_email, get_user_by_id
+from flask import request, jsonify
 
 serializer = None
 tokens = {}
@@ -19,25 +19,8 @@ def generate_token(user):
     tokens[token] = user['id']
     return token
 
-# def get_user_by_email(email):
-#     from app import mysql
-#     cur = mysql.connection.cursor()
-#     cur.execute("SELECT * FROM User WHERE email=%s", (email,))
-#
-#     user = cur.fetchone()
-#     cur.close()
-#     return user
-#
-# def get_user_by_id(user_id):
-#     from app import mysql
-#     cur = mysql.connection.cursor()
-#     cur.execute("SELECT id, first_name, last_name, email, role, status, password FROM User WHERE id=%s", (user_id,))
-#     user = cur.fetchone()
-#     cur.close()
-    return user
 
-
-def verify_token(token):
+def verify_token(token, user_repo):
     # (Move print to the very top to test raw input)
     print(f"1. Raw token received in auth_utils: '{token}'") 
     
@@ -52,7 +35,7 @@ def verify_token(token):
         print(f"1.2 Token loading failed/expired: {e}") 
         return False
         
-    user = get_user_by_email(email)
+    user = user_repo.get_user_by_email(email)
     
     print(f"2. User retrieved from DB: {user}")
 
@@ -63,3 +46,24 @@ def verify_token(token):
     
     print("4. User not found or inactive.")
     return False
+
+
+
+def authenticate_token(user_repo):
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Bearer '):
+        return None, jsonify({'error': 'Unauthorized'}), 401
+    token = auth_header[len('Bearer '):]
+
+    try:
+        email = serializer.loads(token)
+    except Exception as e:
+        print(f"Token decode error: {e}")
+        return None, jsonify({'error': 'Unauthorized'}), 401
+
+    user = user_repo.get_user_by_email(email)
+    if not user:
+        return None, jsonify({'error': 'Unauthorized'}), 401
+
+    return user, None, None
+
