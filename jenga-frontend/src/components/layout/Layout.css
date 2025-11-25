@@ -155,3 +155,18 @@
   border-left: 3px solid #f39c12;
   padding-left: 17px;
 }
+.register-button {
+  text-decoration: none;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.register-button:hover {
+  background-color: var(--primary-color-hover);
+}

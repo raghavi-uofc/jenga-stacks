@@ -144,3 +144,18 @@ Source: https://codepen.io/chris22smith/pen/RZogMa
     color: #007bff;
     text-decoration: none;
 }
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.auth-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1; /* above background */
+  transform: translateY(-10%);
+}

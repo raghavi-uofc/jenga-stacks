@@ -18,6 +18,7 @@ import UserManagementDashboard from "./features/admin/UserManagementDashboard";
 import UserProfilePage from "./features/user/UserProfilePage";
 import ProjectEditWrapper from "./features/projects/ProjectEditWrapper";
 import ResetPassword from "./features/user/ResetPassword";
+import RegisterForm from "./features/auth/RegisterForm";
 
 export const AuthContext = createContext(null);
 
@@ -106,7 +107,7 @@ const AppRouter = () => {
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
           </Route>
-
+        <Route path="/register" element={<RegisterForm />} />
           <Route path="*" element={<h1>404: Page Not Found</h1>} />
         </Routes>
 
