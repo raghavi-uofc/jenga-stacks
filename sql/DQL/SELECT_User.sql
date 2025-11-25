@@ -3,7 +3,9 @@ USE jengadb;
 SELECT * FROM jengadb.User;
 
 SELECT CONCAT(u.firstName, " ", u.lastName) as fullName,
-       email
+       email,
+       role,
+       status
 FROM jengadb.User u
 WHERE u.status = "active" AND u.role = "regular";
 
