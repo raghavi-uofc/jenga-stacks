@@ -9,3 +9,4 @@ flask-restx
 google-genai
 pytest
 pytest-mock
+python-dotenv
