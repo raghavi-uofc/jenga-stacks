@@ -13,13 +13,15 @@ def admin_list_users():
         return error_response, status_code
 
     # Enforce admin authorization
-    if user.get('role') != 'admin':
+    if user.role != 'admin':
         return jsonify({'error': 'Forbidden – admin access required'}), 403
 
     user_repo = current_app.user_repo
     users = user_repo.get_all_users()
     
-    return jsonify({'users': users})
+    users_dict = [user.to_dict() for user in users]
+    
+    return jsonify({'users': users_dict})
 
 @admin_bp.route('/admin/users/<int:user_id>', methods=['DELETE'])
 def admin_delete_user(user_id):
@@ -29,7 +31,7 @@ def admin_delete_user(user_id):
         return error_response, status_code
 
     # Enforce admin authorization
-    if user.get('role') != 'admin':
+    if user.role != 'admin':
         return jsonify({'error': 'Forbidden – admin access required'}), 403
 
     # --- Delete user safely ---
