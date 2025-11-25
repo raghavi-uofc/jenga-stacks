@@ -7,6 +7,12 @@ class UserService:
         self.user_repo = user_repo
 
     def register_user(self, first_name, last_name, email, password, role):
+        if not (first_name and last_name and email and password and role):
+            return None, "Missing required fields"
+
+        if role not in ['regular', 'admin']:
+            return None, "Invalid role"
+        
         if self.user_repo.get_user_by_email(email):
             return None, "Email already registered"
 
@@ -15,17 +21,19 @@ class UserService:
         user = self.user_repo.get_user_by_email(email)
         return user, None
 
+
     def login_user(self, email, password):
         user = self.user_repo.get_user_by_email(email)
         if not user or user.status != "active":
-            return None, "Invalid credentials"
+            return None, None, "Invalid credentials"
 
         if not bcrypt.check_password_hash(user.password, password):
-            return None, "Invalid credentials"
+            return None, None, "Invalid credentials"
 
         token = generate_token(user.to_dict())
         print(user.to_dict(), '\n', token, '\n')
         return user, token, None
+
 
     def reset_password(self, email, old_password, new_password):
         user = self.user_repo.get_user_by_email(email)

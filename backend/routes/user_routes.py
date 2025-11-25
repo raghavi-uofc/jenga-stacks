@@ -2,26 +2,22 @@
 from flask import Blueprint, request, jsonify, current_app
 from utils.auth_utils import serializer
 from flasgger import swag_from
+from utils.auth_utils import authenticate_token
 
 user_bp = Blueprint("user", __name__)
+
 @user_bp.route('/register', methods=['POST'])
 @swag_from({'tags': ['User']})
 def register():
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Missing JSON body'}), 400
-
+    
     first_name = data.get('first_name')
     last_name = data.get('last_name')
     email = data.get('email')
     password = data.get('password')
     role = data.get('role')
-
-    if not (first_name and last_name and email and password and role):
-        return jsonify({'error': 'Missing required fields'}), 400
-
-    if role not in ['regular', 'admin']:
-        return jsonify({'error': 'Invalid role'}), 400
 
     service = current_app.user_service
     success, error = service.register_user(first_name, last_name, email, password, role)
@@ -54,24 +50,19 @@ def login():
 
 @user_bp.route('/users/reset_password', methods=['POST'])
 def reset_password():
-    auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        return jsonify({"error": "Unauthorized"}), 401
-
-    token = auth_header[len("Bearer "):].strip()
-    try:
-        email = serializer.loads(token)
-    except Exception:
-        return jsonify({'error': 'Unauthorized'}), 401
+    user, error_response, status_code = authenticate_token(current_app.user_repo)
+    if error_response:
+        return error_response, status_code
 
     data = request.get_json()
     old_pw = data.get('old_password')
     new_pw = data.get('new_password')
+
     if not (old_pw and new_pw):
         return jsonify({'error': 'Missing old or new password'}), 400
 
     service = current_app.user_service
-    error = service.reset_password(email, old_pw, new_pw)
+    error = service.reset_password(user.email, old_pw, new_pw)
     if error:
         return jsonify({'error': error}), 401
 

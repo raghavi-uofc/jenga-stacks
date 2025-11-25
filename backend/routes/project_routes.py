@@ -36,6 +36,7 @@ def submit_project():
         return error_response, status_code
 
     data = request.get_json() or {}
+    print("Submitting Project Data:", data)
 
     try:
         project_service = current_app.project_service
@@ -66,8 +67,7 @@ def list_projects_by_user(user_id):
 
     project_service = current_app.project_service
     projects = project_service.get_projects_by_user(user_id)
-    # project is a list of Project , need to dict every one of them 
-    # Convert each Project object into a dict
+
     project_dicts = [project.to_dict() for project in projects]
     return jsonify({'projects': project_dicts}), 200
 
