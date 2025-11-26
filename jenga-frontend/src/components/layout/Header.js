@@ -10,7 +10,7 @@ const Header = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const initials = user ? user.firstName[0].toUpperCase() : "U";
+ const initials = user && user.firstName ? user.firstName[0].toUpperCase() : "U";
 
   const handleProfileClick = () => {
     setIsMenuOpen(false);

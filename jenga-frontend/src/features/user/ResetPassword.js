@@ -3,18 +3,28 @@ import { Link } from "react-router-dom";
 import { resetPassword } from "../../api/authApi";
 import "./ResetPassword.css";
 import { useNavigate } from "react-router-dom";
+import { isValidPassword } from "../../utils/validationUtils";
+
 const ResetPassword = () => {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
+
+    if (!isValidPassword(newPassword)) {
+      setError(
+        "Password must be at least 7 characters long and include letters, numbers, and special characters."
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
