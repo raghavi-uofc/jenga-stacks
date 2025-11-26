@@ -253,6 +253,7 @@ const ProjectForm = ({ initialData = null, isEditMode = false }) => {
                     {formData.team_members.length > 1 && (
                       <button
                         type="button"
+                        disabled={loading || projectStatus === 'submitted'} 
                         onClick={() => removeMemberRow(index)}
                         className="remove-row-button"
                       >

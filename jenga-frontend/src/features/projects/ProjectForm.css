@@ -147,6 +147,11 @@
   background-color: #c82333;
 }
 
+.remove-row-button:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
 .add-member-button {
   background-color: var(--primary-color);
   color: white;
