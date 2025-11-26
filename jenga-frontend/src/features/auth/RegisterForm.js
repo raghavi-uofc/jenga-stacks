@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { registerUser } from "../../api/authApi";
+import { isValidPassword } from "../../utils/validationUtils";
 
 const RegisterForm = ({ switchToLogin, isCurrentUserAdmin }) => {
   const [formData, setFormData] = useState({
@@ -14,7 +15,6 @@ const RegisterForm = ({ switchToLogin, isCurrentUserAdmin }) => {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\-=/\\|]).{7,}$/;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +37,7 @@ const RegisterForm = ({ switchToLogin, isCurrentUserAdmin }) => {
       return;
     }
 
-    if (!passwordPattern.test(formData.password)) {
+     if (!isValidPassword(formData.password)) {
       setError(
         "Password must be at least 7 characters long and include letters, numbers, and special characters."
       );
