@@ -30,8 +30,8 @@ test("shows loading indicator while submitting", async () => {
   let resolver;
   resetPassword.mockImplementation(() => new Promise((r) => (resolver = r)));
   render(<ResetPassword />);
-  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "oldpass" } });
-  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "newpass" } });
+  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "oldPass1!" } });
+  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "NewPass1!" } });
   fireEvent.click(screen.getByRole("button", { name: /reset password/i }));
   expect(screen.getByText(/resetting/i)).toBeInTheDocument();
   resolver();
@@ -41,8 +41,8 @@ test("shows loading indicator while submitting", async () => {
 test("successful password reset shows message and navigates", async () => {
   resetPassword.mockResolvedValueOnce({});
   render(<ResetPassword />);
-  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "oldpass" } });
-  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "newpass" } });
+  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "oldPass1!" } });
+  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "NewPass1!" } });
   fireEvent.click(screen.getByRole("button", { name: /reset password/i }));
 
   await waitFor(() => expect(screen.getByText(/successfully/i)).toBeInTheDocument());
@@ -53,8 +53,18 @@ test("successful password reset shows message and navigates", async () => {
 test("shows error when API fails", async () => {
   resetPassword.mockRejectedValueOnce(new Error("API failure"));
   render(<ResetPassword />);
-  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "badpass" } });
-  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "badnew" } });
+  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "oldPass1!" } });
+  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "NewPass1!" } });
   fireEvent.click(screen.getByRole("button", { name: /reset password/i }));
   await waitFor(() => expect(screen.getByText(/api failure/i)).toBeInTheDocument());
+});
+
+// New test for password validation error
+test("shows validation error for invalid new password", async () => {
+  render(<ResetPassword />);
+  fireEvent.change(screen.getByLabelText(/old password/i), { target: { value: "oldPass1!" } });
+  fireEvent.change(screen.getByLabelText(/new password/i), { target: { value: "short" } }); // invalid password
+  fireEvent.click(screen.getByRole("button", { name: /reset password/i }));
+  expect(await screen.findByText(/password must be at least 7 characters long/i)).toBeInTheDocument();
+  expect(resetPassword).not.toHaveBeenCalled();
 });
