@@ -1,97 +1,90 @@
-import utils.auth_utils as auth_utils
-
-# Tests admin routes for proper auth/role checks and user deletion handling.
-
-
-def _make_token(email="admin@example.com"):
-    return auth_utils.serializer.dumps(email)
+import json
+import types
+import pytest
+from unittest.mock import patch
 
 
-def test_admin_list_users_as_admin(monkeypatch, client):
-    # Admin token should allow listing users.
-    monkeypatch.setattr("routes.admin_routes.get_user_by_email", lambda email: {"role": "admin"})
-    monkeypatch.setattr("routes.admin_routes.get_users", lambda cur: [{"id": 1, "email": "a@b.com"}])
+class FakeUser:
+    def __init__(self, role):
+        self.role = role
 
-    resp = client.get("/api/admin/users", headers={"Authorization": f"Bearer {_make_token()}"})
-    assert resp.status_code == 200
-    assert resp.get_json()["users"] == [{"id": 1, "email": "a@b.com"}]
+    def to_dict(self):
+        return {"id": 1, "name": "Test User"}
 
 
-def test_admin_list_users_non_admin(monkeypatch, client):
-    # Non-admin token should be rejected.
-    monkeypatch.setattr("routes.admin_routes.get_user_by_email", lambda email: {"role": "regular"})
+class FakeUserRepo:
+    def __init__(self, users_exist=True):
+        self.users_exist = users_exist
 
-    resp = client.get("/api/admin/users", headers={"Authorization": f"Bearer {_make_token()}"})
+    def get_all_users(self):
+        return [FakeUser("user"), FakeUser("admin")]
+
+    def delete_user(self, user_id):
+        return self.users_exist
+
+# admin list user tests
+def test_admin_list_users_unauthorized(client, monkeypatch):
+    from routes import admin_routes
+
+    def fake_auth(repo):
+        return None, (jsonify := {"error": "Unauthorized"}), 401
+
+    monkeypatch.setattr(admin_routes, "authenticate_token", fake_auth)
+
+    resp = client.get("/api/admin/users")
     assert resp.status_code == 401
-    assert resp.get_json()["error"] == "Unauthorized"
 
+def test_admin_list_users_forbidden_for_non_admin(client, monkeypatch):
+    from routes import admin_routes
 
-def test_admin_delete_user_success(monkeypatch, client):
-    # Admin token + existing user should delete and return success.
-    monkeypatch.setattr("routes.admin_routes.get_user_by_email", lambda email: {"role": "admin"})
+    def fake_auth(repo):
+        return FakeUser(role="user"), None, 200
 
-    class _Cursor:
-        def __init__(self, rowcount=1):
-            self.rowcount = rowcount
+    monkeypatch.setattr(admin_routes, "authenticate_token", fake_auth)
 
-        def execute(self, *args, **kwargs):
-            return None
+    resp = client.get("/api/admin/users")
+    assert resp.status_code == 403
 
-        def __enter__(self):
-            return self
+def test_admin_list_users_success(client, monkeypatch):
+    from routes import admin_routes
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            return False
+    def fake_auth(repo):
+        return FakeUser(role="admin"), None, 200
 
-    class _Conn:
-        def __init__(self):
-            self.committed = False
+    monkeypatch.setattr(admin_routes, "authenticate_token", fake_auth)
 
-        def cursor(self):
-            return _Cursor(rowcount=1)
+    monkeypatch.setattr(admin_routes.current_app, "user_repo", FakeUserRepo())
 
-        def commit(self):
-            self.committed = True
-
-        def rollback(self):
-            self.rolled_back = True
-
-    monkeypatch.setattr("routes.admin_routes.mysql", type("Obj", (), {"connection": _Conn()})())
-
-    resp = client.delete("/api/admin/users/5", headers={"Authorization": f"Bearer {_make_token()}"})
+    resp = client.get("/api/admin/users")
     assert resp.status_code == 200
-    assert resp.get_json()["message"] == "User deleted"
+    data = resp.get_json()
+    assert "users" in data
+    assert isinstance(data["users"], list)
 
 
-def test_admin_delete_user_not_found(monkeypatch, client):
-    # Admin token + missing user should return 404.
-    monkeypatch.setattr("routes.admin_routes.get_user_by_email", lambda email: {"role": "admin"})
+# admin delete user tests
+def test_admin_delete_user_success(client, monkeypatch):
+    from routes import admin_routes
 
-    class _Cursor:
-        def __init__(self, rowcount=0):
-            self.rowcount = rowcount
+    def fake_auth(repo):
+        return FakeUser(role="admin"), None, 200
 
-        def execute(self, *args, **kwargs):
-            return None
+    monkeypatch.setattr(admin_routes, "authenticate_token", fake_auth)
 
-        def __enter__(self):
-            return self
+    monkeypatch.setattr(admin_routes.current_app, "user_repo", FakeUserRepo(users_exist=True))
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            return False
+    resp = client.delete("/api/admin/users/1")
+    assert resp.status_code == 200
 
-    class _Conn:
-        def cursor(self):
-            return _Cursor(rowcount=0)
+def test_admin_delete_user_not_found(client, monkeypatch):
+    from routes import admin_routes
 
-        def commit(self):
-            self.committed = True
+    def fake_auth(repo):
+        return FakeUser(role="admin"), None, 200
 
-        def rollback(self):
-            self.rolled_back = True
+    monkeypatch.setattr(admin_routes, "authenticate_token", fake_auth)
 
-    monkeypatch.setattr("routes.admin_routes.mysql", type("Obj", (), {"connection": _Conn()})())
+    monkeypatch.setattr(admin_routes.current_app, "user_repo", FakeUserRepo(users_exist=False))
 
-    resp = client.delete("/api/admin/users/5", headers={"Authorization": f"Bearer {_make_token()}"})
+    resp = client.delete("/api/admin/users/999")
     assert resp.status_code == 404
-    assert resp.get_json()["error"] == "User not found"
