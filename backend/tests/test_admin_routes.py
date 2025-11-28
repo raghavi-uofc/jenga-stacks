@@ -1,3 +1,5 @@
+# tests/test_admin_routes.py
+
 import pytest
 from flask import Flask
 from unittest.mock import Mock
